@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>测试用例</title>
+    <script src="src/v2.js"></script>
+    <script src="src/v2.osm.js"></script>
+    <script src="src/v2.rsm.js"></script>
+    <script src="jquery.js"></script>
+</head>
+<body>
+    <div id="testId">
+        <div class="testClass"></div>
+        <div data-attr="testAttr"></div>
+        <div>
+            <div data-attr="testAttr">
+                <input type="radio" value="" checked="checked" />
+            </div>
+        </div>
+    </div>
+    <script>
+        v2.ready({
+            "$text": "请输入{name}",
+            "&show": function (show) {
+                console.log(this.text);
+            }
+        });
+        console.log(v2.StringCb(7, "{a}+{b}+【{for(var v<k> in .){ if(v>1){ $'参数“{k}”的值({v})大于1;' } else { ^'v+1024' } }^}】+【{if(a>b){ ^'b'} else { ^'a' }^}】", { a: 2, b: 2.5, c: 3, d: 1 }));
+        v2.use("input", {
+            input: function () {
+                console.log("input 构造函数");
+            },
+            init: function () {
+                console.log("input");
+                this.base.init("input");
+            }
+        });
+        v2.use("input.inputEdit", {
+            init: function () {
+                console.log("inputEdit");
+                this.base.init();
+            },
+            input: function () {
+                console.log("input inputEdit 构造函数");
+            },
+            inputEdit: function () {
+                console.log("inputEdit 构造函数");
+            }
+        });
+        v2.use("input.*.inputEditV2", {
+            init: function () {
+                console.log("inputEditV2");
+                this.base.init();
+            },
+            input: function () {
+                console.log("input * inputEdit 构造函数");
+            },
+            inputEdit: function () {
+                console.log("inputEdit inputEditV2 构造函数");
+            },
+            inputEditV2: function () {
+                console.log("inputEditV2 构造函数");
+            }
+        });
+        v2("inputEditV2", {
+            name: "单位名称",
+            show: true,
+            access: true,
+            ajax: function () {
+                $.ajax("/jquery.min.js", {
+                    async: true,
+                    success: function () {
+                        console.log("ajax");
+                    }
+                });
+            },
+            commit: function () {
+                console.log("commit");
+            }
+        });
+    </script>
+</body>
+</html>
