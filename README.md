@@ -119,6 +119,6 @@
 [^2]:`N`代表数组参数的元素坐标。
 [^3]:`{Naming}`代表`JSON`的属性名称，替换的时候将会把`JSON`属性名称对应的值替换到字符串中。
 [^4]:`{Naming.[Naming|Function]}` 代表可以获取`JSON`的属性值的属性值，以及调用属性值的方法（可以有多层，如：{a.b.c().d.e()}）。
-[^5]:`{Naming.[Naming|Function] [*^<%>+/-] + Naming.[Naming|Function]}` 代表多个值之间可以进行加、减、乘、除等运算。
+[^5]:`{Naming.[Naming|Function] [*^<%>+/-] Naming.[Naming|Function]}` 代表多个值之间可以进行加、减、乘、除等运算（可以有多层，如：{a + b - c ^ d  / e}）。
 [^6]:`{Naming?.[Naming|Function]}` 可以加入探测符，在该值空（`null`）的时候，终止运算，用于规避预料之内的异常（可以有多层，如：{a.b?.c()?.d.e()}）。
 [^7]:`{.?.Naming]}` 本体探测，即对`JSON`本身进行空值（`null`）探测。注：第一个字符为`.`代表`JSON`对象本身。
