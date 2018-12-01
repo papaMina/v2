@@ -146,7 +146,7 @@
             options = tag;
             tag = options.tag;
         }
-        return v2.ready(tag, function (configs) {
+        return v2.ready(tag, function (tag, configs) {
             return new v2.fn.init(tag, configs ? v2.improve(option, configs) : option);
         });
     }
@@ -198,7 +198,7 @@
         return function (string, option) {
             var match, namespace;
             string = v2.urlCase(string);
-            if (arguments.length < 2) {
+            if (option === undefined) {
                 var results = objectCreate(string, option);
                 while (match = rnamespaceGet.exec(namespace = namespace || namespaceCache(string))) {
                     if (option = fnGet(namespace, string = match[2])) {
@@ -781,8 +781,37 @@
             }
         },
         ready: function (tag, callback) {
-            if (arguments.length > 1) callback();
-            if (!tag || !v2.isPlainObject(tag)) return tag;
+            return callback(tag);
+        }
+    });
+
+    v2.extend({
+        makeMap: makeMap,
+        makeCache: makeCache,
+        makeNamespaceCache: namespaceCached
+    });
+
+    v2.extend({
+        nodeName: function (elem, nodeName) {
+            return elem && elem.nodeName && (!nodeName || nodeName === "*" || elem.nodeName.toLowerCase() === nodeName.toLowerCase());
+        }
+    });
+    var logCb = {
+        debug: 16,
+        error: 8,
+        warn: 4,
+        info: 2,
+        log: 1
+    };
+    var use = namespaceCached(function () {
+        return new Array();
+    }, function (results, value, tag) {
+        if (value) value.tag = tag;
+        results.unshift(value);
+    });
+    v2.extend({
+        use: function (tag, option) {
+            if (v2.isString(tag)) return use(tag, option);
             var type, value,
                 wildCards = {},
                 fn = v2.fn, render;
@@ -815,34 +844,7 @@
                 analyzeWildCard(wildCards, this, variable);
                 return value;
             }
-        }
-    });
-
-    v2.extend({
-        makeMap: makeMap,
-        makeCache: makeCache,
-        makeNamespaceCache: namespaceCached
-    });
-
-    v2.extend({
-        nodeName: function (elem, nodeName) {
-            return elem && elem.nodeName && (!nodeName || nodeName === "*" || elem.nodeName.toLowerCase() === nodeName.toLowerCase());
-        }
-    });
-    var logCb = {
-        debug: 16,
-        error: 8,
-        warn: 4,
-        info: 2,
-        log: 1
-    };
-    v2.extend({
-        use: namespaceCached(function () {
-            return new Array();
-        }, function (results, value, tag) {
-            if (value) value.tag = tag;
-            results.unshift(value);
-        }),
+        },
         typeCb: function (typeCb, type, callback) {
             if (!type || !typeCb || !callback || !(type = type >>> 0)) return;
             v2.each(typeCb, function (typeCb, key) {
