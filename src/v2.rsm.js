@@ -312,7 +312,7 @@
 
     var condition = "(?:" + whitespace + "*(" + condition_ultimate + ")" + whitespace + "*)";//条件
     var if_condition = "if" + whitespace + "*\\(" + condition + "\\)" + whitespace + "*" + formatCode(area, 1) + whitespace + "*";//if条件
-    var rif = new RegExp("(^|" + whitespace + "+)" + if_condition);
+    var rif = new RegExp("(^|" + whitespace + "+)" + formatCode(if_condition, 1));
     var rjudgment = new RegExp(
         "\\{" + whitespace + "*" + if_condition +//if
         "((?:" + whitespace + "*else" + whitespace + "+" + formatCode(if_condition, 5) + whitespace + "*)+)?" + //else if
@@ -330,7 +330,7 @@
             if (linqCode(json, condition)) {
                 return replaceCode(json, model, arguments[4], showMatchStr);
             }
-            if (condition = arguments[6]) {// else if
+            if (condition = arguments[5]) {// else if
                 while (match = rif.exec(condition)) {
                     if (linqCode(json, match[2])) {
                         return replaceCode(json, match[3], match[5], showMatchStr);
