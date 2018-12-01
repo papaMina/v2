@@ -431,6 +431,9 @@
             return makeCode(this);
         },
         format: function (/*..args*/) {
+            if (arguments.length === 1) {
+                return format(this, arguments[1]);
+            }
             return format(this, arguments);
         },
         compile: function (json) {
