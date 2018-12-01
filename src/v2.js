@@ -125,7 +125,7 @@
                 if (value.destroy && value.v2 === version) {
                     value.destroy(deep);
                 } else if (value.jquery) {
-                    if (check_destroy(elem, function (node) { return value.is(node) })) {
+                    if (check_destroy(elem, function (node) { return value.is(node); })) {
                         value.remove();
                     }
                 } else if (value.nodeType) {
@@ -829,16 +829,14 @@
             return elem && elem.nodeName && (!nodeName || nodeName === "*" || elem.nodeName.toLowerCase() === nodeName.toLowerCase());
         }
     });
-    var typeCbId = 0,
-        typeCbCache = {};
+    var logCb = {
+        debug: 16,
+        error: 8,
+        warn: 4,
+        info: 2,
+        log: 1
+    };
     v2.extend({
-        logEnum: {
-            log: 1,
-            info: 2,
-            warn: 4,
-            error: 8,
-            debug: 16
-        },
         use: namespaceCached(function () {
             return new Array();
         }, function (results, value, tag) {
@@ -854,24 +852,12 @@
             });
         },
         log: function (message, type, logAll) {
-            type = Math.max(+type, 1);
-            var log, callback, logEnum = v2.logEnum;
-            for (log in console) {
-                if (log in logEnum && (type & logEnum[log] === logEnum[log])) {
-                    callback = console[log];
-                    if (logAll) callback(message);
-                }
-            }
-            if (callback) {
-                return logAll || callback(message);
-            }
-            for (log in logEnum) {
-                if (logEnum[log] > type) break;
+            return v2.typeCb(logCb, type, function (log) {
                 if (log in console) {
-                    callback = console[log];
+                    console[log](message);
+                    return !!logAll;
                 }
-            }
-            (callback || console.log)(message);
+            });
         },
         error: function (message) {
             throw new Error(message);
