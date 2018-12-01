@@ -29,9 +29,9 @@
     function format(string) {
         if (!string) return string;
         if (arguments.length < 2) return string;
-        if (arguments.length === 2 && isArraylike(arguments[1])) {
+        if (arguments.length === 2 && v2.isArraylike(arguments[1])) {
             for (var i = 0, args = arguments[1], len = args.length; i < len; i++) {
-                string = string.replace(formatCache(i), args[i]);
+                string = string.replace(formatCache(i + 1), args[i]);
             }
             return string;
         }
