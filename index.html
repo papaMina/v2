@@ -25,8 +25,14 @@
                 console.log(this.text);
             }
         });
-        var string = "{0}是一个实用的{1}，包含很多有趣的功能。".format("v2", "前端轻量级框架");
-        console.log(string); // => v2是一个实用的前端轻量级框架，包含很多有趣的功能。
+        var string = "{name.v2 + \"和\" + name.vue}都是{level?.very}实用的{type.slice(2)}，包含很多有趣的功能。".replace({ name: { v2: "v2", vue: "vue" }, level: { very: "【非常】" }, type: "前端轻量级框架" });
+        console.log(string); // => v2和vue都是【非常】实用的轻量级框架，包含很多有趣的功能。
+        var string = "{name.v2 + \"和\" + name.vue}都是{level?.very}实用的{type.slice(2)}，包含很多有趣的功能。".replace({ name: { v2: "v2", vue: "vue" }, type: "前端轻量级框架" });
+        console.log(string); // => v2和vue都是实用的轻量级框架，包含很多有趣的功能。
+
+        var string = "{.?.name}是一个优秀的前端框架？".replace(null);
+        console.log(string); // => 是一个优秀的前端框架？
+         
         console.log(v2.StringCb(7, "{a}+{b}+【{for(var v<k> in .){ if(v>1){ $'参数“{k}”的值({v})大于1;' } else { ^'v+1024' } }^}】+【{if(a>b){ ^'b'} else { ^'a' }^}】", { a: 2, b: 2.5, c: 3, d: 1 }));
         v2.use("input", {
             input: function () {

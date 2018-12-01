@@ -58,6 +58,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="README.md" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -72,6 +73,45 @@
     <Content Include="src\v2.js" />
     <Content Include="src\v2.osm.js" />
     <Content Include="src\v2.rsm.js" />
+    <Content Include="version 1.0\controls\css\v2.check.css" />
+    <Content Include="version 1.0\controls\css\v2.dialog.css" />
+    <Content Include="version 1.0\controls\css\v2.form.css" />
+    <Content Include="version 1.0\controls\css\v2.input.css" />
+    <Content Include="version 1.0\controls\css\v2.layout.css" />
+    <Content Include="version 1.0\controls\css\v2.table.css" />
+    <Content Include="version 1.0\controls\css\v2.treeView.css" />
+    <Content Include="version 1.0\controls\css\v2.wait.css" />
+    <Content Include="version 1.0\controls\img\navbar-icon.png" />
+    <Content Include="version 1.0\controls\js\v2.button.js" />
+    <Content Include="version 1.0\controls\js\v2.button.min.js" />
+    <Content Include="version 1.0\controls\js\v2.check.js" />
+    <Content Include="version 1.0\controls\js\v2.check.min.js" />
+    <Content Include="version 1.0\controls\js\v2.dialog.js" />
+    <Content Include="version 1.0\controls\js\v2.dialog.min.js" />
+    <Content Include="version 1.0\controls\js\v2.form.js" />
+    <Content Include="version 1.0\controls\js\v2.form.min.js" />
+    <Content Include="version 1.0\controls\js\v2.input.js" />
+    <Content Include="version 1.0\controls\js\v2.input.min.js" />
+    <Content Include="version 1.0\controls\js\v2.inputSearch.js" />
+    <Content Include="version 1.0\controls\js\v2.inputSearch.min.js" />
+    <Content Include="version 1.0\controls\js\v2.layout.js" />
+    <Content Include="version 1.0\controls\js\v2.layout.min.js" />
+    <Content Include="version 1.0\controls\js\v2.select.js" />
+    <Content Include="version 1.0\controls\js\v2.select.min.js" />
+    <Content Include="version 1.0\controls\js\v2.tabbar.js" />
+    <Content Include="version 1.0\controls\js\v2.tabbar.min.js" />
+    <Content Include="version 1.0\controls\js\v2.table.js" />
+    <Content Include="version 1.0\controls\js\v2.table.min.js" />
+    <Content Include="version 1.0\controls\js\v2.tableEdit.js" />
+    <Content Include="version 1.0\controls\js\v2.treeView.js" />
+    <Content Include="version 1.0\controls\js\v2.treeView.min.js" />
+    <Content Include="version 1.0\controls\js\v2.wait.js" />
+    <Content Include="version 1.0\controls\js\v2.wait.min.js" />
+    <Content Include="version 1.0\v2.cookie.js" />
+    <Content Include="version 1.0\v2.cookie.min.js" />
+    <Content Include="version 1.0\v2.core.js" />
+    <Content Include="version 1.0\v2.core.min.js" />
+    <Content Include="version 1.0\v2.js" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>

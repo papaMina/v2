@@ -195,10 +195,10 @@
         return object || object === 0;
     }
     function linqSimpleCode(object, string) {
-        var arg, key, stop, lastObj, arr = string.split("."),
+        var arg, key, stop, arr = string.split("."),
             checkCode = function () {
-                lastObj = object;
-                if (!arg || isValidObject(object = object[RegExp.$2])) {
+                object = object[RegExp.$2];
+                if (!arg || isValidObject(object)) {
                     arg = RegExp.$2;
                     return true;
                 }
@@ -218,10 +218,7 @@
         if (!isValidObject(object)) {
             return returnthrowsCode(object, arg);
         }
-        if (key.indexOf("(") > -1) {
-            object = lastObj;
-            arr.unshift(key);
-        }
+        arr.unshift(key);
         arr.unshift(arg || "object");
         return makeCode(arr.join("."))(object, true);
     }
@@ -263,6 +260,7 @@
         return value;
     }
     function linqCode(object, string, key, simple) {
+        var newString = string;
         if (!key && string && rword.test(string)) {
             key = string;
             string = undefined;
@@ -275,15 +273,15 @@
                 }
             }
         }
-        if (!!key) {
+        if (key || string) {
             if (!isValidObject(object)) {
-                return returnthrowsCode(object, key);
+                return returnthrowsCode(object, key || newString);
             }
         }
         if (!string) return key ? object[key] : object;
         string = key ? key + string : string;
         if (simple || rsimple.test(string)) {
-            return linqSimpleCode(key ? object[key] : object, string);
+            return linqSimpleCode(object, string);
         }
         if (rsimple_pro.test(string)) {
             return linqNextCode(object, linqCode(object, RegExp.$2, RegExp.$1, true), RegExp.$3);
@@ -432,7 +430,7 @@
         },
         format: function (/*..args*/) {
             if (arguments.length === 1) {
-                return format(this, arguments[1]);
+                return format(this, arguments[0]);
             }
             return format(this, arguments);
         },
@@ -440,7 +438,7 @@
             return linqCode(json, this);
         },
         replace: function (json, showMatchStr) {
-            if (replace_cb || !(replace_cb = v2.type(json) === "object")) {
+            if (replace_cb || !(replace_cb = json == null || v2.type(json) === "object")) {
                 if (arguments.length > 2) {
                     return core_replace.call(this, core_slice.call(arguments));
                 }
