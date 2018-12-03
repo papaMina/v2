@@ -35,20 +35,17 @@
 
         var string = '<ul>{for(var v<k> in .){ $"<li data-index="{k}">{v}</li>" } ^}</ul>'.each(["Vue", "V2", "Jquery", "Bootstrap"]);
         console.log(string); // => <ul><li data-index="0">Vue</li><li data-index="1">V2</li><li data-index="2">Jquery</li><li data-index="3">Bootstrap</li></ul>
-
-
+        
         var string = '<ul>{for(var v in .){ if(v.show) { $"<li>{v.name}</li>" } else { $"<li><s>{v.name}<s></li>" } } ^}</ul>'.each([{ show: true, name: "Vue" }, { show: true, name: "V2" }, { show: false, name: "Jquery" }, { show: true, name: "Bootstrap" }]);
         console.log(string); // => <ul><li>Vue</li><li>V2</li><li><s>Jquery<s></li><li>Bootstrap</li></ul>
-
-
         console.log(v2.StringCb(7, "{a}+{b}+【{for(var v<k> in .){ if(v>1){ $'参数“{k}”的值({v})大于1;' } else { ^'v+1024' } }^}】+【{if(a>b){ ^'b'} else { ^'a' }^}】", { a: 2, b: 2.5, c: 3, d: 1 }));
-
         v2.use({
             "$text": "请输入{name}",
             "&show": function (show) {
                 console.log(this.text);
             }
         });
+        var i = "a + b".compile({ a: 1, b: 2 }) // => 3;
         v2.use("input", {
             input: function () {
                 console.log("input 构造函数");

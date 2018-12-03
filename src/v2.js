@@ -199,7 +199,7 @@
             var match, namespace;
             string = v2.urlCase(string);
             if (option === undefined) {
-                var results = objectCreate(string, option);
+                var results = objectCreate(string);
                 while (match = rnamespaceGet.exec(namespace = namespace || namespaceCache(string))) {
                     if (option = fnGet(namespace, string = match[2])) {
                         objectCallback(results, option, string === "*" ? fixString : string);
@@ -517,6 +517,7 @@
                     }
                 }
             }, this);
+            destroyObject(this.base, true);//基础对象始终深度释放。
             destroyObject(this, deep);
         }
     };
@@ -854,15 +855,12 @@
             });
         },
         log: function (message, type, logAll) {
-            return v2.typeCb(logCb, type, function (log) {
+            return v2.typeCb(logCb, type || 1, function (log) {
                 if (log in console) {
                     console[log](message);
                     return !!logAll;
                 }
             });
-        },
-        error: function (message) {
-            throw new Error(message);
         }
     });
 
