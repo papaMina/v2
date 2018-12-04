@@ -215,10 +215,32 @@
             v2.error("string:" + string + ",Invalid class name space.");
         };
     };
-
-    function analyzeWildCard(wildCards, context, variable) {
+    function readonlyProperty(context, name, value) {
+        try {
+            delete context[name];
+            Object.defineProperty(context, name, {
+                get: function () {
+                    return value;
+                }
+            });
+        } catch (_) {
+            context[name] = value;
+        }
+    };
+    function initWildCards(wildCards, key, type, value) {
+        if (!wildCards || !key) return key;
+        var wildcard, char = key[0];
+        if (wildcard = v2.wildCards[char]) {
+            key = key.slice(1);
+            if (wildcard.type === "*" || wildcard.type === (type = type || v2.type(value)) || wildcard.type.indexOf(type + "|") > -1 || wildcard.type.indexOf("|" + type) > -1) {
+                wildCards[key] = wildcard;
+            }
+        }
+        return key;
+    }
+    function renderWildCard(context, variable) {
         var val;
-        v2.each(wildCards, function (value, key) {
+        v2.each(context.wildCards, function (value, key) {
             if (!(key in context.enumState)) {
                 val = value.exec(context, value.type === "function" ? variable[key] : context[key], key);
                 if (val !== undefined) {
@@ -231,6 +253,27 @@
             }
         });
     }
+    var whitespace = "[\\x20\\t\\r\\n\\f]";
+    var word = "[_a-z][_a-z0-9]*";
+    var rword = new RegExp(word, "gi");
+    var rinject = new RegExp("^" + whitespace + "*(" + word + ")\\(((" + whitespace + "*" + word + whitespace + "*,)*" + whitespace + "*" + word + ")?" + whitespace + "*\\)" + whitespace + "*$", "i");
+    function onDependencyInjection(context, key, inject, value) {
+        if (!inject) return value;
+        var args = [], baseArgs, injections = inject.match(rword);
+        var callback = context[key];
+        if (callback) {
+            context[key] = function () {
+                return callback.apply(context, core_slice.call(baseArgs));
+            };
+        }
+        return function () {
+            for (key in injections) {
+                args[key] = (key = injections[key]) in context.variable ? context.variable[key] : context[key];
+            }
+            baseArgs = arguments;
+            return value.apply(context, args);
+        };
+    }
     function HTMLColection(tag) {
         var tagColection = (new Function('return function ' + tag.charAt(0).toUpperCase() + tag.slice(1) + 'Colection(tag){ this.tag = tag; }'))();
         tagColection.prototype = {
@@ -239,15 +282,19 @@
         };
         return new tagColection(tag);
     };
-    var global_focusCtrl;
+    
+    var identity = 0,
+        CurrentV2Control = null;
     v2.fn = v2.prototype = {
         constructor: v2,
         tag: "*",
         v2: version,
+        identity: 0,
         limit: false,
         access: false,
         $: null,
         $$: null,
+        wildCards: {},
         enumState: {
             pending: 0.5,
             init: 1,
@@ -298,28 +345,24 @@
             var fn,
                 tag,
                 type,
+                match,
                 isFunction,
                 namespace = "*",
                 defaults = {},
                 options = {},
                 variable = {},
-                wildCards = {},
+                wildCards = this.wildCards || (this.wildCards = {}),
                 makeCallback = function (callback, key) {
                     if (callback.control === context) return callback;
-                    var _base, _value, _callback = key in context.enumState ? function () {
+                    var _base, _value, _callback = function () {
                         _base = context.base;
                         context.base = _base.base;
-                        if (context.enumState[key] > 1 && context.enumState[key] < 4) {
+                        _value = context.enumState[key];
+                        if (_value && _value > 1 && _value < 4) {
                             _value = callback.call(context, variable);
                         } else {
-                            _value = callback.apply(context, core_slice.call(arguments));
+                            _value = arguments.length > 0 ? callback.apply(context, core_slice.call(arguments)) : callback.call(context);
                         }
-                        context.base = _base;
-                        return _value;
-                    } : function () {
-                        _base = context.base;
-                        context.base = _base.base;
-                        _value = callback.apply(context, arguments);
                         context.base = _base;
                         return _value;
                     };
@@ -332,7 +375,7 @@
                     }
                     base[key] = makeCallback(value, key);
                 },
-                initControls = function (option) {
+                initControls = function (option, dependencyInjection) {
                     if (!option) return option;
                     type = v2.type(option);
                     if (type === "array") return v2.each(option, initControls);
@@ -345,18 +388,18 @@
                     if (tag && (fn = option[v2.camelCase(tag)]) && v2.isFunction(fn)) {
                         fn.call(context, option);
                     }
+                    var orgKey;
                     v2.each(option, function (value, key) {
                         if (key === tag || value == null) return;
-                        type = v2.type(value);
-                        var wildcard, char = key[0];
-                        if (wildcard = v2.wildCards[char]) {
-                            key = key.slice(1);
-                            if (wildcard.type === type || wildcard.type.indexOf(type + "|") > -1 || wildcard.type.indexOf("|" + type) > -1) {
-                                wildCards[key] = wildcard;
-                            }
-                        }
+                        key = initWildCards(wildCards, orgKey = key, type = v2.type(value));
+                        if (key === tag) return;
                         switch (type) {
                             case "function":
+                                if (dependencyInjection === true) {
+                                    if (match = rinject.exec(key)) {
+                                        value = onDependencyInjection(context, key = match[1], match[2], value);
+                                    }
+                                }
                                 if (fn = context[key]) {
                                     defaults[key] = value;
                                     extendsCallback(context.base, key, fn);
@@ -377,13 +420,8 @@
                                 }
                                 break;
                             case "string":
-                                if (key in context) {
-                                    if (key === "tag") {
-                                        namespace += "." + value;
-                                    }
-                                    if (!context[key] || !(key in options ? options[key] : options[key] = v2.isFunction(context[key]))) {
-                                        context[key] = value;
-                                    }
+                                if (key === "tag") {
+                                    namespace += "." + value;
                                 }
                             default:
                                 if (key in context && !(key in options ? options[key] : options[key] = v2.isFunction(context[key]))) {
@@ -392,12 +430,12 @@
                                 variable[key] = value;
                                 break;
                         }
-                        if (isFunction) option[key] = undefined;
+                        if (isFunction) option[orgKey] = undefined;
                     });
                     if (isFunction) option = undefined;
                 };
             v2.each(v2.use(this.tag), initControls);
-            initControls(this.option);
+            initControls(this.option, true);
             var base, value, core_base = context.base;
             v2.each(defaults, function (fn, key) {
                 defaults[key] = undefined;
@@ -409,16 +447,12 @@
                     return value;
                 };
             });
-            try {
-                Object.defineProperty(context, "namespace", {
-                    writable: false,
-                    value: namespace
-                });
-            } catch (_) {
-                context.namespace = namespace;
-            }
-            context.variable = variable;
-            context.wildCards = wildCards;
+            readonlyProperty(this, "v2", version);
+            readonlyProperty(this, "tag", this.tag);
+            readonlyProperty(this, "identity", ++identity);
+            readonlyProperty(this, "variable", variable);
+            readonlyProperty(this, "wildCards", wildCards);
+            readonlyProperty(this, "namespace", namespace);
             initControls = (extendsCallback = (makeCallback = undefined));
         },
         init: function (tag, option) {
@@ -483,14 +517,15 @@
                     v2.merge(v2[name + "s"] || (v2[name + "s"] = HTMLColection(name)), this);
                 }
             }, this);
-            analyzeWildCard(this.wildCards, this, variable);
+            renderWildCard(this, variable);
         },
         whenThen: function (state, falseStop) {
             if (typeof state === "boolean") {
                 falseStop = state;
                 state = undefined;
             }
-            global_focusCtrl = this;
+            var control = CurrentV2Control;
+            CurrentV2Control = this;
             var value, isReady = true;
             falseStop = falseStop == null ? true : falseStop;
             for (state in this.enumState) {
@@ -506,6 +541,7 @@
                 }
             }
             this.isReady = isReady;
+            CurrentV2Control = control;
         },
         destroy: function (deep) {
             v2.each(this.namespace.split("."), function (tag) {
@@ -813,9 +849,8 @@
     v2.extend({
         use: function (tag, option) {
             if (v2.isString(tag)) return use(tag, option);
-            var type, value,
-                wildCards = {},
-                fn = v2.fn, render;
+            var fn = v2.fn,
+                wildCards = fn.wildCards || (fn.wildCards = {});
             v2.each(tag, function (value, key) {
                 if (key === "init") {
                     var baseConfigs = fn.baseConfigs;
@@ -826,25 +861,8 @@
                     }
                     return;
                 }
-                var wildcard, char = key.charAt(0);
-                if (wildcard = v2.wildCards[char]) {
-                    key = key.slice(1);
-                    type = v2.type(value);
-                    if (wildcard.type === type || wildcard.type.indexOf(type + "|") > -1 || wildcard.type.indexOf("|" + type) > -1) {
-                        wildCards[key] = wildcard;
-                    }
-                }
-                fn[key] = value;
+                fn[initWildCards(wildCards, key, null, value)] = value;
             });
-            if (v2.isEmptyObject(wildCards)) {
-                return wildCards = undefined;
-            }
-            render = fn.render;
-            fn.render = function (variable) {
-                value = render.apply(this, core_slice.call(arguments));
-                analyzeWildCard(wildCards, this, variable);
-                return value;
-            }
         },
         typeCb: function (typeCb, type, callback) {
             if (!type || !typeCb || !callback || !(type = type >>> 0)) return;
@@ -869,20 +887,31 @@
     var xhrCb = window.XMLHttpRequest,
         xhr = new xhrCb(),
         xhrId = 0,
+        xhrReadyWait = {},
         xhrCallbacks = {},
         xhr_send = xhr.send,
         xhr_open = xhr.open,
         xhr_abort = xhr.abort;
     v2.extend(xhrCb.prototype, {
         open: function (_method, _url, async) {
-            if (async && global_focusCtrl) {
-                var status, xhr = this, ctrl = global_focusCtrl;
-                global_focusCtrl.sleep(true);
+            if (async && CurrentV2Control) {
+                var status, xhr = this,
+                    v2Control = CurrentV2Control,
+                    identity = v2Control.identity;
+                v2Control.sleep(true);
+                if (xhrReadyWait[identity]) {
+                    xhrReadyWait[identity] += 1;
+                } else {
+                    xhrReadyWait[identity] = 1;
+                }
                 xhrCallbacks[xhr.xhrId = ++xhrId] = function () {
                     status = xhr.status;
                     xhr.onreadystatechange = noop;
                     if (status >= 200 && status < 300 || status === 304 || status === 1223) {
-                        ctrl.sleep(false);
+                        if (xhrReadyWait[identity] == 1) {
+                            v2Control.sleep(false);
+                        }
+                        xhrReadyWait[identity] -= 1;
                     }
                     delete xhrCallbacks[xhr.xhrId];
                 };
