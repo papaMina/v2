@@ -18,11 +18,9 @@
         factory(v2kit);
     }
 }(function (v2) {
-    /* eslint-enable */
     'use strict';
 
     var whitespace = "[\\x20\\t\\r\\n\\f]";
-    var rbeautify = new RegExp(whitespace + "*([^.?_(\\[\\x20\\t\\r\\n\\f\\])a-zA-Z0-9]+|(?:(?!\\?[.\\[])\\?))" + whitespace + "*", "gm");
     var formatCache = v2.makeCache(function (i) {
         return new RegExp("\\{" + (i - 1) + "\\}", "gm");
     });
@@ -58,8 +56,8 @@
         rbrackets = new RegExp("^(\\[([^\\[\\]]+)\\]\\??)", "gm"),
         rsimple = new RegExp("^" + simple + "?$", "i"),
         rreturn = new RegExp("^(" + whitespace + "*return" + whitespace + "+)"),
-        rsimple_single = new RegExp("(^|[^.?_)a-z0-9]|" + whitespace + "+)(" + word + ")(" + whitespace + "+|[^.?_(a-z0-9]|$)", "img"),
-        rif_simple = new RegExp("(^|[^.?_)a-z0-9]|" + whitespace + "+)(" + simple + "+)(" + whitespace + "+|[^.?_(a-z0-9]|$)", "img");
+        rsimple_single = new RegExp("(?:^|[^.?_)a-z0-9]|" + whitespace + "+)(" + word + ")(?:" + whitespace + "+|[^.?_(a-z0-9]|$)", "img"),
+        rif_simple = new RegExp("(^|[^.?_)a-z0-9]|" + whitespace + "+|\\b)(" + simple + "+)(\\b|" + whitespace + "+|[^.?_(a-z0-9]|$)", "img");
 
     var rformat_code = /\\([1-9][0-9]*)/g;
     var makeCode = v2.makeCache(function (string) {
@@ -122,21 +120,22 @@
         });
     }
     function lamdaCode(string, vars, mains) {
+        var index = string.indexOf("?");
+        if (!mains && index === -1) return string;
         vars = vars || {};
-        var index = string.indexOf("."),
-            index2 = string.indexOf("?");
-        if (index > -1 && index2 > -1) {
-            index = Math.min(index, index2);
+        var index2 = string.indexOf(".");
+        if (index2 > -1 && index > -1) {
+            index2 = Math.min(index2, index);
         } else {
-            index = index > -1 ? index : index2;
+            index2 = index2 > -1 ? index2 : index;
         }
         var name,
             value,
             i = 0,
             code = [],
-            main_if = index2 === index,
-            main = string.slice(0, index),
-            arr = string.slice(index + (index === index2) & 1).split("?");
+            main_if = index === index2,
+            main = string.slice(0, index2),
+            arr = string.slice(index2 + (index2 === index) & 1).split("?");
         if (mains && !mains[main]) mains[main] = main;
         if (!main_if && arr.length === 1) return string;
         while (name = arr[i++]) {
@@ -163,13 +162,11 @@
     function _makeCode(string, keys) {
         var vars = {}, mains = keys && {};
         if (keys) {
-            matchCode(string, rsimple_single, function (_pre, word, _next) {
+            matchCode(string, rsimple_single, function (word) {
                 mains[word] = word;
             });
         }
-        string = string.replace(rbeautify, function (_, letter) {
-            return " " + letter + " ";
-        }).replace(rif_simple, function (_, pre, lamda, next) {
+        string = string.replace(rif_simple, function (_, pre, lamda, next) {
             return pre + lamdaCode(lamda, vars, mains) + next;
         });
         if (!rreturn.test(string)) {
@@ -187,32 +184,33 @@
         });
         return string;
     }
-    function returnthrowsCode(object, key, arg) {
-        if (!key || key[0] === "?") return object;
-        v2.error("TypeError:" + (arg || key || "object") + " is undefined");
+    function returnthrowsCode(object, key, first) {
+        if (key[first ? 0 : key.length - 1] === "?") {
+            return object;
+        }
+        v2.error("TypeError:" + key + " is undefined");
     }
     function isValidObject(object) {
         return object || object === 0;
     }
     function linqSimpleCode(object, string) {
-        var arg, key, stop, arr = string.split("."),
+        var arg, key, nostop, arr = string.split("."),
             checkCode = function () {
+                if (!isValidObject(object)) return false;
                 object = object[RegExp.$2];
-                if (!arg || isValidObject(object)) {
-                    arg = RegExp.$2;
-                    return true;
-                }
+                return true;
+
             };
         while (key = arr.shift()) {
-            while (stop = (rif_word.test(key) || rbrackets.test(key))) {
+            while (nostop = (rif_word.test(key) || rbrackets.test(key))) {
                 if (checkCode()) {
-                    if (key === RegExp.$1) break;
-                    key = key.slice(RegExp.$1.length);
+                    if (key === (arg = RegExp.$1)) break;
+                    key = key.slice(arg.length);
                     continue;
                 }
-                return returnthrowsCode(object, RegExp.$1, arg);
+                return returnthrowsCode(object, arg);
             }
-            if (!stop) break;
+            if (!nostop) break;
         }
         if (!key) return object;
         if (!isValidObject(object)) {
@@ -273,10 +271,8 @@
                 }
             }
         }
-        if (key || string) {
-            if (!isValidObject(object)) {
-                return returnthrowsCode(object, key || newString);
-            }
+        if (string && !isValidObject(object)) {
+            return returnthrowsCode(object, newString, true);
         }
         if (!string) return key ? object[key] : object;
         string = key ? key + string : string;
@@ -395,7 +391,7 @@
         },
         operators: {
             "+": function (a, b) {
-                return rnumber.test(a) && rnumber.test(b) ? +a + +b : a + b;
+                return rnumber.test(a) && rnumber.test(b) ? +a + +b : a ? b ? a + b : a : b;
             },
             "-": function (a, b) {
                 return a - b;

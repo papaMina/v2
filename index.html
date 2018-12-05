@@ -19,7 +19,7 @@
         </div>
     </div>
     <script>
-        var string = "{name.v2 + \"和\" + name.vue}都是{level?.very}实用的{type.slice(2)}，包含很多有趣的功能。".replace({ name: { v2: "v2", vue: "vue" }, level: { very: "【非常】" }, type: "前端轻量级框架" });
+        var string = "{name.v2 +\"和\"+ name?.vue}都是{level?.very}实用的{type.slice(2)}，包含很多有趣的功能。".replace({ name: { v2: "v2", vue: "vue" }, level: { very: "【非常】" }, type: "前端轻量级框架" });
         console.log(string); // => v2和vue都是【非常】实用的轻量级框架，包含很多有趣的功能。
         var string = "{name.v2 + \"和\" + name.vue}都是{level?.very}实用的{type.slice(2)}，包含很多有趣的功能。".replace({ name: { v2: "v2", vue: "vue" }, type: "前端轻量级框架" });
         console.log(string); // => v2和vue都是实用的轻量级框架，包含很多有趣的功能。
@@ -39,6 +39,8 @@
         var string = '<ul>{for(var v in .){ if(v.show) { $"<li>{v.name}</li>" } else { $"<li><s>{v.name}<s></li>" } } ^}</ul>'.each([{ show: true, name: "Vue" }, { show: true, name: "V2" }, { show: false, name: "Jquery" }, { show: true, name: "Bootstrap" }]);
         console.log(string); // => <ul><li>Vue</li><li>V2</li><li><s>Jquery<s></li><li>Bootstrap</li></ul>
         console.log(v2.StringCb(7, "{a}+{b}+【{for(var v<k> in .){ if(v>1){ $'参数“{k}”的值({v})大于1;' } else { ^'v+1024' } }^}】+【{if(a>b){ ^'b'} else { ^'a' }^}】", { a: 2, b: 2.5, c: 3, d: 1 }));
+
+        var timestamp = +new Date();
         v2.use({
             "$text": "请输入{name}",
             "&show": function (show) {
@@ -49,7 +51,7 @@
                 console.log(show);
             }
         });
-        var i = "a + b".compile({ a: 1, b: 2 }) // => 3;
+        //var i = "a + b".compile({ a: 1, b: 2 }) // => 3;
         v2.use("input", {
             input: function () {
                 console.log("input 构造函数");
@@ -111,6 +113,7 @@
                 console.log("commit");
             }
         });
+        console.log(+new Date() - timestamp);
     </script>
 </body>
 </html>

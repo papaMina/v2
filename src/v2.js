@@ -1,4 +1,12 @@
-﻿(function (global, factory) {
+﻿/*!
+ * JavaScript v2 v1.0.1
+ * https://github.com/vbton/v2
+ *
+ ** @author hyly
+ ** @date 2018-12-01
+ ** @descript a valuable technology object.
+ */
+(function (global, factory) {
     return typeof exports === 'object' && typeof module === "object" ?
         module.exports = global.document ? factory(global) : function (window) {
             if (window.document == null) throw new Error("v2 requires a window with a document");
@@ -12,7 +20,7 @@
     'use strict';
 
     var
-        version = "1.2.0.0",
+        version = "2.0.1.0",
         rtrim = /^[\x20\t\r\n\f]+|[\x20\t\r\n\f]+$/g,
         core_trim = version.trim || function () {
             if (this == null) {
@@ -20,25 +28,22 @@
             }
             return String(this).replace(rtrim, "");
         };
-    var
-        rdashAlpha = /-([a-z])/img,
+    var rdashAlpha = /-([a-z])/img,
         fcamelCase = function (_, letter) {
             return letter.toUpperCase();
         };
-    var
-        rcapitalAlpha = /([A-Z])/gm,
+    var rcapitalAlpha = /([A-Z])/gm,
         furlCase = function (_, letter) {
             return "-" + letter.toLowerCase();
         };
 
-    var
-        class2type = {},
+    var class2type = {},
         core_toString = class2type.toString,
         core_hasOwn = class2type.hasOwnProperty;
-    var
-        core_arr = [],
+    var core_arr = [],
         core_slice = core_arr.slice,
         core_splice = core_arr.splice,
+        core_concat = core_arr.concat,
         core_indexOf = core_arr.indexOf || function (item, from) {
             if (this == null) {
                 throw new Error("Uncaught TypeError: Array.prototype.indexOf called on null or undefined at indexOf.");
@@ -75,15 +80,14 @@
         return expectsLowerCase ? function (string) {
             value = cache[string.toLowerCase()];
             if (value != null) return value;
-            if (arguments.length === 1) return cache[string.toLowerCase()] = callback.call(cache, string);
-            return cache[string.toLowerCase()] = callback.apply(cache, core_slice.call(arguments));
+            return cache[string.toLowerCase()] = applyCallback(callback, arguments);
         } : function (string) {
             value = cache[string];
             if (value != null) return value;
-            if (arguments.length === 1) return cache[string] = callback.call(cache, string);
-            return cache[string] = callback.apply(cache, core_slice.call(arguments));
+            return cache[string] = applyCallback(callback, arguments);
         }
     }
+
     function isArraylike(object) {
         if (object == null) return false;
         var length = object.length,
@@ -151,13 +155,12 @@
         });
     }
     var tag = "[a-z][a-z0-9]*(?:-[a-z][a-z0-9]*)*";
-    var rany = /\*/g;
-    var rtag = new RegExp("^" + tag + "$", "i");
-    var rnamespace = new RegExp("^(?:(\\*|" + tag + "(?:\\.(?:" + tag + "|\\*))*" + ")\\.)?(" + tag + ")$", "i");
-    var rnamespaceGet = new RegExp("^(?:(\\*|" + tag + "(?:\\.(?:" + tag + "|\\*))*" + ")\\.)?(\\*|" + tag + ")$", "i");
+    var rany = /\*/g,
+        rtag = new RegExp("^" + tag + "$", "i"),
+        rnamespace = new RegExp("^(?:(" + tag + "(?:\\.(?:" + tag + "|\\*))*" + ")\\.)?(" + tag + ")$", "i"),
+        rnamespaceGet = new RegExp("^(?:(" + tag + "(?:\\.(?:" + tag + "|\\*))*" + ")\\.)?(\\*|" + tag + ")$", "i");
     function namespaceCached(objectCreate, objectCallback) {
-        var fixString,
-            cache = {},
+        var cache = {},
             matchCache = makeCache(function (namespace) {
                 return new RegExp("^" + namespace.replace(/\./g, "\\.").replace(rany, "[^\\.]+") + "$", "i");
             }, true),
@@ -180,11 +183,12 @@
                     return false;
                 }
                 if (string === "*") {
-                    fixString = string = namespace.split(".").pop();
+                    string = namespace.split(".").pop();
                 }
                 return cached[string];
             },
             fnSet = function (namespace, string, option) {
+                option.tag = string;
                 namespace = namespaceCache(string, namespace || "*");
                 var data, cached = cache[namespace] || (cache[namespace] = {});
                 if (!(data = cached[string]) || v2.isFunction(option)) {
@@ -202,7 +206,7 @@
                 var results = objectCreate(string);
                 while (match = rnamespaceGet.exec(namespace = namespace || namespaceCache(string))) {
                     if (option = fnGet(namespace, string = match[2])) {
-                        objectCallback(results, option, string === "*" ? fixString : string);
+                        objectCallback(results, option);
                     }
                     namespace = match[1];
                     if (!namespace || namespace === "*") break;
@@ -253,26 +257,39 @@
             }
         });
     }
-    var whitespace = "[\\x20\\t\\r\\n\\f]";
-    var word = "[_a-z][_a-z0-9]*";
-    var rword = new RegExp(word, "gi");
-    var rinject = new RegExp("^" + whitespace + "*(" + word + ")\\(((" + whitespace + "*" + word + whitespace + "*,)*" + whitespace + "*" + word + ")?" + whitespace + "*\\)" + whitespace + "*$", "i");
-    function onDependencyInjection(context, key, inject, value) {
+    var whitespace = "[\\x20\\t\\r\\n\\f]",
+        word = "[_a-z][_a-z0-9]*";
+    var rword = new RegExp(word, "gi"),
+        rinject = new RegExp("^" + whitespace + "*(" + word + ")\\(((" + whitespace + "*" + word + whitespace + "*,)*" + whitespace + "*" + word + ")?" + whitespace + "*\\)" + whitespace + "*$", "i");
+    function dependencyInjection(context, key, inject, value) {
         if (!inject) return value;
         var args = [], baseArgs, injections = inject.match(rword);
         var callback = context[key];
         if (callback) {
             context[key] = function () {
-                return callback.apply(context, core_slice.call(baseArgs));
+                return applyCallback(callback, baseArgs, context, true);
+            };
+            return function () {
+                for (key in injections) {
+                    args[key] = (key = injections[key]) in context.variable ? context.variable[key] : context[key];
+                }
+                baseArgs = core_slice.call(arguments);
+                return applyCallback(value, core_concat.call(args, baseArgs), context, true);
             };
         }
         return function () {
             for (key in injections) {
                 args[key] = (key = injections[key]) in context.variable ? context.variable[key] : context[key];
             }
-            baseArgs = arguments;
-            return value.apply(context, args);
+            return applyCallback(value, args, context, true);
         };
+    }
+    function applyCallback(callback, args, context, sliced) {
+        if (!args || args.length === 0) return callback.call(context);
+        if (args.length === 1) return callback.call(context, args[0]);
+        if (args.length === 2) return callback.call(context, args[0], args[1]);
+        if (args.length === 3) return callback.call(context, args[0], args[1], args[2]);
+        return callback.apply(context, sliced ? args : core_slice.call(args));
     }
     function HTMLColection(tag) {
         var tagColection = (new Function('return function ' + tag.charAt(0).toUpperCase() + tag.slice(1) + 'Colection(tag){ this.tag = tag; }'))();
@@ -282,7 +299,7 @@
         };
         return new tagColection(tag);
     };
-    
+
     var identity = 0,
         CurrentV2Control = null;
     v2.fn = v2.prototype = {
@@ -361,7 +378,7 @@
                         if (_value && _value > 1 && _value < 4) {
                             _value = callback.call(context, variable);
                         } else {
-                            _value = arguments.length > 0 ? callback.apply(context, core_slice.call(arguments)) : callback.call(context);
+                            _value = applyCallback(callback, arguments, context);
                         }
                         context.base = _base;
                         return _value;
@@ -375,7 +392,7 @@
                     }
                     base[key] = makeCallback(value, key);
                 },
-                initControls = function (option, dependencyInjection) {
+                initControls = function (option) {
                     if (!option) return option;
                     type = v2.type(option);
                     if (type === "array") return v2.each(option, initControls);
@@ -395,10 +412,8 @@
                         if (key === tag) return;
                         switch (type) {
                             case "function":
-                                if (dependencyInjection === true) {
-                                    if (match = rinject.exec(key)) {
-                                        value = onDependencyInjection(context, key = match[1], match[2], value);
-                                    }
+                                if (match = rinject.exec(key)) {
+                                    value = dependencyInjection(context, key = match[1], match[2], value);
                                 }
                                 if (fn = context[key]) {
                                     defaults[key] = value;
@@ -410,7 +425,7 @@
                             case "array":
                             case "object":
                                 if (key in context) {
-                                    context[key] = (!context[key] || type === "array") ? value : v2.extend(true, value, context[key]);
+                                    context[key] = (!context[key] || type === "array") ? value : v2.improve(true, value, context[key]);
                                 } else if (value.nodeType) {
                                     variable[key] = value;
                                 } else {
@@ -435,14 +450,14 @@
                     if (isFunction) option = undefined;
                 };
             v2.each(v2.use(this.tag), initControls);
-            initControls(this.option, true);
+            initControls(this.option);
             var base, value, core_base = context.base;
             v2.each(defaults, function (fn, key) {
                 defaults[key] = undefined;
                 context[key] = function () {
                     base = context.base;
                     context.base = core_base;
-                    value = fn.apply(context, core_slice.call(arguments));
+                    value = applyCallback(fn, arguments, context);
                     context.base = base;
                     return value;
                 };
@@ -464,7 +479,7 @@
             if (this.ajax && this.access) {
                 render = this.render;
                 this.render = function () {
-                    var value = render.apply(this, core_slice.call(arguments));
+                    var value = applyCallback(render, arguments, this);
                     this.sleep(function () {
                         this.ajax();
                     });
@@ -524,13 +539,13 @@
                 falseStop = state;
                 state = undefined;
             }
-            var control = CurrentV2Control;
+            var v2Control = CurrentV2Control;
             CurrentV2Control = this;
             var value, isReady = true;
             falseStop = falseStop == null ? true : falseStop;
             for (state in this.enumState) {
-                if (this.enumState[state] > this.enumState[this.state] >>> 0) {
-                    value = this.enumState[state];
+                value = this.enumState[state];
+                if (value > this.enumState[this.state] >>> 0) {
                     if (this[this.state = state] && v2.isFunction(this[state])) {
                         value = value > 1 && value < 4 ? this[state](this.variable) : this[state]();
                         if (falseStop && (value === false || this.sleep())) {
@@ -541,7 +556,7 @@
                 }
             }
             this.isReady = isReady;
-            CurrentV2Control = control;
+            CurrentV2Control = v2Control;
         },
         destroy: function (deep) {
             v2.each(this.namespace.split("."), function (tag) {
@@ -600,15 +615,11 @@
     var improveCallbak = function (value, option) {
         return option == null ? value : option;
     };
-    /**
-     * 强继承
-     */
+
     v2.extend = function () {
         return v2.extension.call(this, arguments);
     };
-    /**
-     * 弱继承
-     */
+
     v2.improve = function () {
         return v2.extension.call(this, improveCallbak, arguments);
     };
@@ -705,68 +716,31 @@
     });
 
     v2.extend({
-        /**
-         * 排断是否为空
-         * @returns {Boolean}
-         */
         isEmpty: function (object) {
             return !object || object.length === 0;
         },
-        /**
-         * 判断对象是不是window对象
-         * @returns {Boolean}
-         */
         isWindow: function (object) {
             return object != null && object.window == object;
         },
-        /**
-         * 判断对象是不是数字
-         * @returns {Boolean}
-         */
         isNumber: function (object) {
             return !!object && (object - parseFloat(object) >= 0);
         },
-        /**
-         * 判断对象是不是字符串
-         * @returns {Boolean}
-         */
         isString: function (object) {
             return v2.type(object) === "string";
         },
-        /**
-         * 判断对象是不是方法
-         * @returns {Boolean}
-         */
         isFunction: function (object) {
             return v2.type(object) === "function";
         },
-        /**
-         * 判断对象是不是空对象
-         * @returns {Boolean}
-         * true=》该对象为空，false=》该对象非空；
-         */
         isEmptyObject: function (object) {
             for (var i in object) {
                 return false;
             }
             return true;
         },
-        /**
-         * 判断对象是否满足ArrayLike
-         * @returns {Boolean}
-         */
         isArraylike: isArraylike,
-        /**
-         * 判断对象是不是数组
-         * @returns {Boolean}
-         */
         isArray: Array.isArray || function (object) {
             return v2.type(object) === "array";
         },
-        /**
-         * 判断对象是不是简单对象
-         * @returns {Boolean}
-         */
         isPlainObject: function (object) {
             if (!object || v2.type(object) !== "object" || object.nodeType || v2.isWindow(object)) {
                 return false;
@@ -842,8 +816,7 @@
     };
     var use = namespaceCached(function () {
         return new Array();
-    }, function (results, value, tag) {
-        if (value) value.tag = tag;
+    }, function (results, value) {
         results.unshift(value);
     });
     v2.extend({
@@ -855,7 +828,7 @@
                 if (key === "init") {
                     var baseConfigs = fn.baseConfigs;
                     fn.baseConfigs = function () {
-                        value = baseConfigs.apply(this, core_slice.call(arguments));
+                        value = applyCallback(baseConfigs, arguments);
                         this.init = value;
                         return value;
                     }
@@ -887,7 +860,7 @@
     var xhrCb = window.XMLHttpRequest,
         xhr = new xhrCb(),
         xhrId = 0,
-        xhrReadyWait = {},
+        xhrWait = {},
         xhrCallbacks = {},
         xhr_send = xhr.send,
         xhr_open = xhr.open,
@@ -899,28 +872,29 @@
                     v2Control = CurrentV2Control,
                     identity = v2Control.identity;
                 v2Control.sleep(true);
-                if (xhrReadyWait[identity]) {
-                    xhrReadyWait[identity] += 1;
+                if (xhrWait[identity]) {
+                    xhrWait[identity] += 1;
                 } else {
-                    xhrReadyWait[identity] = 1;
+                    xhrWait[identity] = 1;
                 }
                 xhrCallbacks[xhr.xhrId = ++xhrId] = function () {
-                    status = xhr.status;
-                    xhr.onreadystatechange = noop;
-                    if (status >= 200 && status < 300 || status === 304 || status === 1223) {
-                        if (xhrReadyWait[identity] == 1) {
-                            v2Control.sleep(false);
+                    if (xhr.readyState === 4) {
+                        status = xhr.status;
+                        xhr.onreadystatechange = noop;
+                        if (status >= 200 && status < 300 || status === 304 || status === 1223) {
+                            if (!(xhrWait[identity] -= 1)) {
+                                v2Control.sleep(false);
+                            }
                         }
-                        xhrReadyWait[identity] -= 1;
+                        delete xhrCallbacks[xhr.xhrId];
                     }
-                    delete xhrCallbacks[xhr.xhrId];
                 };
             }
-            return xhr_open.apply(this, core_slice.call(arguments));
+            return applyCallback(xhr_open, arguments, this);
         },
         send: function (data) {
-            var xhr = this, xhr_id = this.xhrId;
-            if (xhr_id > 0) {
+            var xhr = this, xhr_id = xhr.xhrId;
+            if (xhr_id && xhr_id > 0) {
                 setTimeout(function () {
                     if (xhr.readyState === 4) {
                         if (xhr_id in xhrCallbacks) {
@@ -928,13 +902,17 @@
                         }
                         return;
                     }
-                    var callback = xhr.onreadystatechange;
-                    xhr.onreadystatechange = callback ? function () {
-                        callback.apply(this, core_slice.call(arguments));
+                    var onchange, callback = xhr.onreadystatechange;
+                    xhr.onreadystatechange = callback ? (onchange = function () {
+                        applyCallback(callback, arguments, this);
                         if (xhr_id in xhrCallbacks) {
                             xhrCallbacks[xhr_id]();
                         }
-                    } : xhrCallbacks[xhr_id];
+                        if (xhr_id in xhrCallbacks && onchange != xhr.onreadystatechange) {
+                            callback = xhr.onreadystatechange || noop;
+                            xhr.onreadystatechange = onchange;
+                        }
+                    }) : xhrCallbacks[xhr_id];
                 });
             }
             return data ? xhr_send.call(this, data) : xhr_send.call(this);

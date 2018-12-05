@@ -1,6 +1,6 @@
 /*!
  * JavaScript v2 v1.0.1
- * https://github.com/v2kit/v2
+ * https://github.com/vbton/v2
  *
  ** @author hyly
  ** @date 2018-08-01
