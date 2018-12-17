@@ -21,13 +21,13 @@
 
 # 格式化字符串（三）
 > #### 直接使用字符串“.”方法的方式格式化字符串。
->> 字符串增加`judge`方法，使用判断的方式格式化字符串。
+>> 字符串增加`if`方法，使用判断的方式格式化字符串。
 
 ---
-    String.judge({JSON},|Boolean|?)
+    String.if({JSON},|Boolean|?)
 ----
 
-参考解说：[Blog](https://www.cnblogs.com/vbing/p/10050075.html "judge")
+参考解说：[Blog](https://www.cnblogs.com/vbing/p/10050075.html "if")
 
 # 格式化字符串（四）
 > #### 直接使用字符串“.”方法的方式格式化字符串。
