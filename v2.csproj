@@ -61,7 +61,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="README.md" />
+    <Content Include="src\v2.css" />
+    <Content Include="src\v2.tool.js" />
     <Content Include="usage\v2\package-lock.json" />
+    <Content Include="src\v2.esm.css" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

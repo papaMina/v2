@@ -1,0 +1,334 @@
+﻿/** 片段*/
+
+
+.ui {
+    margin-top: 2em;
+    font-size: 1.2em;
+    position: relative;
+    border-radius: .25em;
+}
+
+    .ui *,
+    .ui .ui,
+    .ui:after,
+    .ui:before,
+    .ui :after,
+    .ui :before {
+        font-size: 100%;
+    }
+
+    .ui,
+    .ui *,
+    .ui:after,
+    .ui:before,
+    .ui :after,
+    .ui :before {
+        line-height: 1.42857143;
+        border-collapse: separate;
+        vertical-align: middle;
+        text-decoration: none;
+        text-transform: none;
+        outline: 0;
+        text-shadow: none;
+    }
+
+        .ui.ui-series > :first-child,
+        .ui.ui-series > .hidden:first-child + *,
+        .ui.ui-series > .hidden:first-child + .hidden + *,
+        .ui.ui-series > .hidden:first-child + .hidden + .hidden + *,
+        .ui.ui-series > .hidden:first-child + .hidden + .hidden + .hidden + *,
+        .ui.ui-series > .hidden:first-child + .hidden + .hidden + .hidden + .hidden + *,
+        .ui.ui-series > .hidden:first-child + .hidden + .hidden + .hidden + .hidden + .hidden + * {
+            border-top-left-radius: inherit;
+        }
+
+        .ui.ui-series > :only-child {
+            border-top-right-radius: inherit;
+            border-bottom-left-radius: inherit;
+        }
+
+
+        .ui.ui-series > :last-child {
+            border-bottom-right-radius: inherit;
+        }
+
+        .ui.ui-series > * + :last-child {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        .ui.ui-entry {
+            position: relative;
+            padding: .375em 1em;
+            -webkit-transition: opacity .1s ease, background-color .1s ease, color .1s ease, box-shadow .1s ease, background .1s ease;
+            transition: opacity .1s ease, background-color .1s ease, color .1s ease, box-shadow .1s ease, background .1s ease;
+            background-color: transparent;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+.ui-compose .ui {
+    display: block;
+}
+
+.ui-compose.ui-horizontal {
+    display: inline-block;
+}
+
+    .ui-compose.ui-horizontal .ui {
+        float: left;
+    }
+
+.ui-compose.ui-vertical {
+    width: 15.75em;
+}
+
+    .ui-compose.ui-vertical .ui {
+        width: 100%;
+    }
+
+/** 组件 */
+.component > .ui {
+    border: .0625em solid #c0c0c0;
+}
+/** 书柜 */
+.bookcase {
+    padding: .375em 1em;
+    border: .0625em solid #c0c0c0;
+}
+
+
+    .bookcase > .ui {
+        border-width: inherit;
+        border-style: inherit;
+        border-color: inherit;
+    }
+
+    .bookcase.ui-horizontal > .ui + .ui,
+    .component.ui-horizontal > .ui + .ui {
+        margin-left: 5px;
+    }
+
+    .component.ui-vertical > .ui + .ui,
+    .bookcase.ui-vertical > .ui + .ui {
+        margin-top: 5px;
+    }
+
+    .bookcase.ui-compose.ui-horizontal > .ui:first-child,
+    .component.ui-compose.ui-horizontal > .ui:first-child {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .bookcase.ui-compose.ui-horizontal > .ui + .ui,
+    .component.ui-compose.ui-horizontal > .ui + .ui {
+        margin-left: 0;
+        border-left-width: 0;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    .bookcase.ui-compose.ui-vertical > .ui:first-child,
+    .component.ui-compose.ui-vertical > .ui:first-child {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .bookcase.ui-compose.ui-vertical > .ui + .ui,
+    .component.ui-compose.ui-vertical > .ui + .ui {
+        margin-top: 0;
+        border-top-width: 0;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+
+    .bookcase.ui-compose > .ui-entry.ui-convex:after,
+    .bookcase.ui-compose > .ui-entry.ui-convex:before,
+    .component.ui-compose > .ui-entry.ui-convex:after,
+    .component.ui-compose > .ui-entry.ui-convex:before,
+    .bookcase.ui-compose > .ui-entry.ui-concave:after,
+    .bookcase.ui-compose > .ui-entry.ui-concave:before,
+    .component.ui-compose > .ui-entry.ui-concave:after,
+    .component.ui-compose > .ui-entry.ui-concave:before,
+    .bookcase.ui-compose > .ui-entry.ui-convex.ui-concave + .ui-entry:after,
+    .bookcase.ui-compose > .ui-entry.ui-convex.ui-concave + .ui-entry:before,
+    .component.ui-compose > .ui-entry.ui-convex.ui-concave + .ui-entry:after,
+    .component.ui-compose > .ui-entry.ui-convex.ui-concave + .ui-entry:before {
+        position: absolute;
+        width: 0;
+        height: 0;
+        content: '';
+        margin: auto;
+        border-style: inherit;
+        border-color: transparent;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+    }
+
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-convex:after,
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-convex:before,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-convex:after,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-convex:before,
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-concave:after,
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-concave:before,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-concave:after,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-concave:before,
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-convex.ui-concave + .ui-entry:after,
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-convex.ui-concave + .ui-entry:before,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-convex.ui-concave + .ui-entry:after,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-convex.ui-concave + .ui-entry:before {
+        top: 0;
+        bottom: 0;
+    }
+
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-convex:after,
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-convex:before,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-convex:after,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-convex:before {
+        left: 99.3%;
+    }
+
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-convex::after,
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-convex::before,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-convex::after,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-convex::before {
+        left: 99.65%;
+    }
+
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-convex:after,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-convex:after {
+        border-left-color: #fff;
+    }
+
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-convex:before,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-convex:before {
+        border-left-color: inherit;
+    }
+
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-concave:after,
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-concave:before,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-concave:after,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-concave:before {
+        right: 99.3%;
+    }
+
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-concave::after,
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-concave::before,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-concave::after,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-concave::before {
+        right: 99.65%;
+    }
+
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-convex.ui-concave + .ui-entry:after,
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-convex.ui-concave + .ui-entry:before,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-convex.ui-concave + .ui-entry:after,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-convex.ui-concave + .ui-entry:before {
+        right: 99.75%;
+    }
+
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-concave:after,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-concave:after,
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-convex.ui-concave + .ui-entry:after,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-convex.ui-concave + .ui-entry:after {
+        border-right-color: #fff;
+    }
+
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-concave:before,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-concave:before,
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-convex.ui-concave + .ui-entry:before,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-convex.ui-concave + .ui-entry:before {
+        border-right-color: inherit;
+    }
+
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-convex.ui-concave:after,
+    .bookcase.ui-compose.ui-horizontal > .ui-entry.ui-convex.ui-concave:before,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-convex.ui-concave:after,
+    .component.ui-compose.ui-horizontal > .ui-entry.ui-convex.ui-concave:before {
+        right: auto;
+        border-right-color: transparent;
+    }
+
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-convex:after,
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-convex:before,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-convex:after,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-convex:before,
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-concave:after,
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-concave:before,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-concave:after,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-concave:before,
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-convex.ui-concave + .ui-entry:after,
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-convex.ui-concave + .ui-entry:before,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-convex.ui-concave + .ui-entry:after,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-convex.ui-concave + .ui-entry:before {
+        left: 0;
+        right: 0;
+    }
+
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-convex:after,
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-convex:before,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-convex:after,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-convex:before {
+        top: 99.75%;
+    }
+
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-convex:after,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-convex:after {
+        border-top-color: #fff;
+    }
+
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-convex:before,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-convex:before {
+        border-top-color: inherit;
+    }
+
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-concave:after,
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-concave:before,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-concave:after,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-concave:before,
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-convex.ui-concave + .ui-entry:after,
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-convex.ui-concave + .ui-entry:before,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-convex.ui-concave + .ui-entry:after,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-convex.ui-concave + .ui-entry:before {
+        bottom: 99.75%;
+    }
+
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-concave:after,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-concave:after,
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-convex.ui-concave + .ui-entry:after,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-convex.ui-concave + .ui-entry:after {
+        border-bottom-color: #fff;
+    }
+
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-concave:before,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-concave:before,
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-convex.ui-concave + .ui-entry:before,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-convex.ui-concave + .ui-entry:before {
+        border-bottom-color: inherit;
+    }
+
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-convex.ui-concave:after,
+    .bookcase.ui-compose.ui-vertical > .ui-entry.ui-convex.ui-concave:before,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-convex.ui-concave:after,
+    .component.ui-compose.ui-vertical > .ui-entry.ui-convex.ui-concave:before {
+        bottom: auto;
+        border-bottom-color: transparent;
+    }
+
+    .bookcase.ui-compose > .ui-entry.ui-convex:after,
+    .bookcase.ui-compose > .ui-entry.ui-concave:after,
+    .component.ui-compose > .ui-entry.ui-convex:after,
+    .component.ui-compose > .ui-entry.ui-concave:after,
+    .bookcase.ui-compose > .ui-entry.ui-convex.ui-concave + .ui-entry:after,
+    .component.ui-compose > .ui-entry.ui-convex.ui-concave + .ui-entry:after {
+        z-index: 10;
+        border-width: .512em;
+    }
+
+    .bookcase.ui-compose > .ui-entry.ui-convex:before,
+    .bookcase.ui-compose > .ui-entry.ui-concave:before,
+    .component.ui-compose > .ui-entry.ui-convex:before,
+    .component.ui-compose > .ui-entry.ui-concave:before,
+    .bookcase.ui-compose > .ui-entry.ui-convex.ui-concave + .ui-entry:before,
+    .component.ui-compose > .ui-entry.ui-convex.ui-concave + .ui-entry:before {
+        z-index: 5;
+        border-width: .6em;
+    }

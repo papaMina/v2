@@ -3477,7 +3477,7 @@
         v2.bro.isFirefox = false;
     }
 
-    v2.bro.isWebkit = v2.bro.isGecko = v2.bro.isTrident = false; //修复
+    v2.bro.isWebkit = v2.bro.isGecko = v 2.bro.isTrident = false; //修复
 
     v2.bro.isBrowse32Bit = navigator.platform == "Win32"; //是否为32位浏览器
 
@@ -3486,3 +3486,4 @@
     //#endregion
     return window.v2Kit = window.v2 = v2;
 });
+  

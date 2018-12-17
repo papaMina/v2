@@ -56,8 +56,9 @@
         rbrackets = new RegExp("^(\\[([^\\[\\]]+)\\]\\??)", "gm"),
         rsimple = new RegExp("^" + simple + "?$", "i"),
         rreturn = new RegExp("^(" + whitespace + "*return" + whitespace + "+)"),
-        rsimple_single = new RegExp("(?:^|[^.?_)a-z0-9]|" + whitespace + "+)(" + word + ")(?:" + whitespace + "+|[^.?_(a-z0-9]|$)", "img"),
-        rif_simple = new RegExp("(^|[^.?_)a-z0-9]|" + whitespace + "+|\\b)(" + simple + "+)(\\b|" + whitespace + "+|[^.?_(a-z0-9]|$)", "img");
+        rlamda_main = new RegExp("^(" + word + ")(\\.|\\?|\\[|$)"),
+        rif_simple = new RegExp("(^|[^.?_)a-z0-9]|" + whitespace + "+|\\b)(" + simple + "+)(" + whitespace + "+|[^.?_(a-z0-9]|$)", "img"),
+        rif_simple_word = new RegExp("(^|[^.?_)a-z0-9]|" + whitespace + "+|\\b)(" + simple + "?)(" + whitespace + "+|[^.?_(a-z0-9]|$)", "img");
 
     var rformat_code = /\\([1-9][0-9]*)/g;
     var makeCode = v2.makeCache(function (string) {
@@ -96,6 +97,7 @@
         return value + " = " + main + " == null ? " + main + " : " + main + name;
     }
     function matchCode(string, rmatch, callback) {
+        if (!string || !rmatch || !callback) return string;
         var matched, match, context = {}, isArray = v2.isArraylike(rmatch);
         while (match = string && (isArray ? v2.any(rmatch, function (r) { return r.exec(string); }) : rmatch.exec(string))) {
             context.matched = matched = match.shift();
@@ -120,22 +122,18 @@
         });
     }
     function lamdaCode(string, vars, mains) {
-        var index = string.indexOf("?");
-        if (!mains && index === -1) return string;
+        if (!mains && string.indexOf("?") === -1) return string;
+        var match = rlamda_main.exec(string);
+        if (!match) v2.syntaxError(string);
+        if (mains[0] === string) return mains ? mains[match[1]] = match[1] : match[1];
         vars = vars || {};
-        var index2 = string.indexOf(".");
-        if (index2 > -1 && index > -1) {
-            index2 = Math.min(index2, index);
-        } else {
-            index2 = index2 > -1 ? index2 : index;
-        }
         var name,
             value,
             i = 0,
             code = [],
-            main_if = index === index2,
-            main = string.slice(0, index2),
-            arr = string.slice(index2 + (index2 === index) & 1).split("?");
+            main = match[1],
+            main_if = match[2] === "?",
+            arr = string.slice(match[0].length).split("?");
         if (mains && !mains[main]) mains[main] = main;
         if (!main_if && arr.length === 1) return string;
         while (name = arr[i++]) {
@@ -161,12 +159,7 @@
     }
     function _makeCode(string, keys) {
         var vars = {}, mains = keys && {};
-        if (keys) {
-            matchCode(string, rsimple_single, function (word) {
-                mains[word] = word;
-            });
-        }
-        string = string.replace(rif_simple, function (_, pre, lamda, next) {
+        string = string.replace(mains ? rif_simple_word : rif_simple, function (_, pre, lamda, next) {
             return pre + lamdaCode(lamda, vars, mains) + next;
         });
         if (!rreturn.test(string)) {
@@ -194,23 +187,25 @@
         return object || object === 0;
     }
     function linqSimpleCode(object, string) {
-        var arg, key, nostop, arr = string.split("."),
-            checkCode = function () {
+        var arg, key, match, arr = string.split("."),
+            checkCode = function (prop) {
                 if (!isValidObject(object)) return false;
-                object = object[RegExp.$2];
+                if (prop[0] === "'" && prop[prop.length - 1] === "'" || prop[0] === '"' && prop[prop.length - 1] === '"') {
+                    prop = prop.slice(1, -1);
+                }
+                object = object[prop];
                 return true;
-
             };
         while (key = arr.shift()) {
-            while (nostop = (rif_word.test(key) || rbrackets.test(key))) {
-                if (checkCode()) {
-                    if (key === (arg = RegExp.$1)) break;
+            while (match = (rif_word.exec(key) || rbrackets.exec(key))) {
+                if (checkCode(match[2])) {
+                    if (key === (arg = match[1])) break;
                     key = key.slice(arg.length);
                     continue;
                 }
                 return returnthrowsCode(object, arg);
             }
-            if (!nostop) break;
+            if (!match) break;
         }
         if (!key) return object;
         if (!isValidObject(object)) {
@@ -310,10 +305,10 @@
     var if_condition = "if" + whitespace + "*\\(" + condition + "\\)" + whitespace + "*" + formatCode(area, 1) + whitespace + "*";//if条件
     var rif = new RegExp("(^|" + whitespace + "+)" + formatCode(if_condition, 1));
     var rjudgment = new RegExp(
-        "\\{" + whitespace + "*" + if_condition +//if
+        "`\\$\\{" + whitespace + "*" + if_condition +//if
         "((?:" + whitespace + "*else" + whitespace + "+" + formatCode(if_condition, 5) + whitespace + "*)+)?" + //else if
         "(" + whitespace + "*else" + whitespace + "*" + formatCode(area, 10) + whitespace + "*)?" +//else
-        whitespace + "*\\^\\}", "gm");
+        whitespace + "*\\}`", "gm");
     function replaceCode(json, model, string, showMatchStr) {
         if (string && model in v2.compilers) {
             return v2.compilers[model](json, string, showMatchStr);
@@ -340,11 +335,11 @@
 
     var forin = "for" + whitespace + "*\\(" + whitespace + "*(?:var" + whitespace + "+)?(" + word + ")(?:<(" + word + ")>)?" + whitespace + "+in" + whitespace + "+" +
         formatCode(simple_pro, 2) + whitespace + "*\\)";
-    var rforin = new RegExp("\\{" + whitespace + "*" + forin + whitespace +
+    var rforin = new RegExp("`\\$\\{" + whitespace + "*" + forin + whitespace +
         "*(?:" + formatCode(area, 14) + "|\\{" + whitespace + "*" +
         formatCode(if_condition, 17) +
         "(" + whitespace + "*else" + whitespace + "*" + formatCode(area, 22) + whitespace + "*)?" +
-        whitespace + "*\\})" + whitespace + "*\\^\\}", "gm");
+        whitespace + "*\\})" + whitespace + "*\\}`", "gm");
 
     function forEach(string, json, showMatchStr) {
         return string.replace(rforin, function (matchStr, value, key, object, descendant) {//for
@@ -444,7 +439,7 @@
             replace_cb = false;
             return replace_value;
         },
-        judge: function (json, showMatchStr) {
+        if: function (json, showMatchStr) {
             return judge(this, json, showMatchStr);
         },
         each: function (json, showMatchStr) {
@@ -453,7 +448,7 @@
     });
     var typeCb = {
         each: 4,
-        judge: 2,
+        if: 2,
         replace: 1
     };
     v2.extend(v2.wildCards, {

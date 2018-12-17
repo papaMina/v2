@@ -529,7 +529,7 @@
             v2.each(this.namespace.split("."), function (tag) {
                 if (rtag.test(tag)) {
                     var name = v2.camelCase(tag);
-                    v2.merge(v2[name + "s"] || (v2[name + "s"] = HTMLColection(name)), this);
+                    v2.merge(v2[name + "s"] || (v2[name + "s"] = HTMLColection(name)), [this]);
                 }
             }, this);
             renderWildCard(this, variable);

@@ -47,7 +47,7 @@ interface String {
      * @param showMatchStr 没有找到属性的时候释放显示原字符串。
      * @see \`{@link https://www.cnblogs.com/vbing/p/10050075.html }\`
      */
-    judge(json: VBtonsoft.PlainObject, showMatchStr?: boolean): string;
+    if(json: VBtonsoft.PlainObject, showMatchStr?: boolean): string;
     /**
      * 使用遍历的方式格式化字符串。
      * @param json 参数。
