@@ -219,7 +219,9 @@
             v2.error("string:" + string + ",Invalid class name space.");
         };
     };
+    var deleteSurport = true;
     function readonlyProperty(context, name, value) {
+        if (!deleteSurport) return context[name] = value;
         try {
             delete context[name];
             Object.defineProperty(context, name, {
@@ -228,15 +230,22 @@
                 }
             });
         } catch (_) {
+            deleteSurport = false;
             context[name] = value;
         }
     };
+    var typeCache = makeCache(function (type) {
+        var pattern = new RegExp("(^|\\|)" + type + "(\\||$)");
+        return function (wildcard) {
+            return pattern.test(wildcard);
+        };
+    });
     function initWildCards(wildCards, key, type, value) {
         if (!wildCards || !key) return key;
         var wildcard, char = key[0];
         if (wildcard = v2.wildCards[char]) {
             key = key.slice(1);
-            if (wildcard.type === "*" || wildcard.type === (type = type || v2.type(value)) || wildcard.type.indexOf(type + "|") > -1 || wildcard.type.indexOf("|" + type) > -1) {
+            if (wildcard.type === "*" || typeCache(type = type || v2.type(value))(wildcard.type)) {
                 wildCards[key] = wildcard;
             }
         }
@@ -263,9 +272,8 @@
         rinject = new RegExp("^" + whitespace + "*(" + word + ")\\(((" + whitespace + "*" + word + whitespace + "*,)*" + whitespace + "*" + word + ")?" + whitespace + "*\\)" + whitespace + "*$", "i");
     function dependencyInjection(context, key, inject, value) {
         if (!inject) return value;
-        var args = [], baseArgs, injections = inject.match(rword);
-        var callback = context[key];
-        if (callback) {
+        var callback, baseArgs, args = [], injections = inject.match(rword);
+        if (callback = context[key]) {
             context[key] = function () {
                 return applyCallback(callback, baseArgs, context, true);
             };
@@ -392,10 +400,10 @@
                     }
                     base[key] = makeCallback(value, key);
                 },
-                initControls = function (option) {
+                initControls = function (option, isArrayPro) {
                     if (!option) return option;
                     type = v2.type(option);
-                    if (type === "array") return v2.each(option, initControls);
+                    if (isArrayPro === true && type === "array") return v2.each(option, initControls);
                     tag = option.tag;
                     if (isFunction = type === "function") {
                         namespace += "." + tag;
@@ -449,7 +457,9 @@
                     });
                     if (isFunction) option = undefined;
                 };
-            v2.each(v2.use(this.tag), initControls);
+            v2.each(v2.use(this.tag), function (option) {
+                initControls(option, true);
+            });
             initControls(this.option);
             var base, value, core_base = context.base;
             v2.each(defaults, function (fn, key) {
@@ -601,7 +611,10 @@
             return callback ? callback(value, option) : option;
         };
         while ((option = array[i++]) != null) {
-            if (typeof option === "boolean") { deep = option; continue; }
+            if (typeof option === "boolean") {
+                deep = option;
+                continue;
+            }
             if (target == null) {
                 target = isArraylike(option) ? [] : {};
             }
@@ -723,7 +736,7 @@
             return object != null && object.window == object;
         },
         isNumber: function (object) {
-            return !!object && (object - parseFloat(object) >= 0);
+            return object - parseFloat(object) >= 0;
         },
         isString: function (object) {
             return v2.type(object) === "string";

@@ -11,13 +11,13 @@
 
 ## 格式化字符串（二）
 > ##### 直接使用字符串“.”方法的方式格式化字符串。
->> 加强了字符串原有的`replace`，也就是说，字符串的原有原生方法，用法不变。
+>> 将对象和字符串做关系映射。
 
 ---
-    String.replace({JSON},|Boolean|?)
+    String.map({JSON},|Boolean|?)
 ----
 
-参考解说：[Blog](https://www.cnblogs.com/vbing/p/10048901.html "replace")
+参考解说：[Blog](https://www.cnblogs.com/vbing/p/10048901.html "map")
 
 # 格式化字符串（三）
 > #### 直接使用字符串“.”方法的方式格式化字符串。
@@ -38,3 +38,13 @@
 ----
 
 参考解说：[Blog](https://www.cnblogs.com/vbing/p/10050240.html "each")
+
+# 格式化字符串（四）
+> #### 直接使用字符串“.”方法的方式格式化字符串。
+>> 将对象和字符串做关系映射并进行运算。
+
+---
+    String.compile({Array|JSON},|Boolean|?)
+----
+
+参考解说：[Blog](https://www.cnblogs.com/vbing/p/10321024.html "compile")

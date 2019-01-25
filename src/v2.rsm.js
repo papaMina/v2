@@ -280,18 +280,27 @@
         return makeCode(string)(object, !key);
     };
 
-    function replaceResult(string) {
+    function compileResult(string) {
         return string == null ? "" : string;
     }
-    function replace(string, json, showMatchStr) {
+    function compile(string, json, showMatchStr) {
         return string.replace(rsimple_pro_rep, function (matchStr, key, descendant, next) {
             if (key === "." || key in json) {
-                return replaceResult(linqNextCode(json, linqCode(json, descendant, key, true), next));
+                return compileResult(linqNextCode(json, linqCode(json, descendant, key, true), next));
             }
             return showMatchStr ? matchStr : "";
         });
     }
-
+    var rcore_match = /\{(?![0-9]+)([\w-]+)((?:\.[\w-]+)+)?\}/g;
+    function replace(json, showMatchStr) {
+        return string.replace(rcore_match, function (matchStr, key, descendant) {
+            if (key in json) {
+                key = linqCode(json, descendant, key, true);
+                return (key || key === 0) ? key : '';
+            }
+            return showMatchStr ? matchStr : "";
+        });
+    }
     var area = "\\{" + whitespace + "*([$^])?" + formatCode(quotes_chars, 1) + whitespace + "*\\}";//执行域
 
     var bag = "(?:[^\\(\\)]+?)";
@@ -309,27 +318,27 @@
         "((?:" + whitespace + "*else" + whitespace + "+" + formatCode(if_condition, 5) + whitespace + "*)+)?" + //else if
         "(" + whitespace + "*else" + whitespace + "*" + formatCode(area, 10) + whitespace + "*)?" +//else
         whitespace + "*\\}`", "gm");
-    function replaceCode(json, model, string, showMatchStr) {
+    function compileCode(json, model, string, showMatchStr) {
         if (string && model in v2.compilers) {
             return v2.compilers[model](json, string, showMatchStr);
         }
-        return replaceResult(string);
+        return compileResult(string);
     }
     function judge(string, json, showMatchStr) {
         return string.replace(rjudgment, function (_, condition, model) {
             var match;
             if (linqCode(json, condition)) {
-                return replaceCode(json, model, arguments[4], showMatchStr);
+                return compileCode(json, model, arguments[4], showMatchStr);
             }
             if (condition = arguments[5]) {// else if
                 while (match = rif.exec(condition)) {
                     if (linqCode(json, match[2])) {
-                        return replaceCode(json, match[3], match[5], showMatchStr);
+                        return compileCode(json, match[3], match[5], showMatchStr);
                     }
                     condition = condition.slice(match.index + match[0].length);
                 }
             }
-            return replaceCode(json, arguments[11], arguments[13], showMatchStr);//else
+            return compileCode(json, arguments[11], arguments[13], showMatchStr);//else
         });
     }
 
@@ -364,12 +373,12 @@
                 if (key) map[key] = k;
                 if (condition) {
                     if (key ? condition(v, k, data) : condition(v, data)) {
-                        html += replaceCode(map, trueModel, trueContent, matchStr);
+                        html += compileCode(map, trueModel, trueContent, matchStr);
                     } else {
-                        html += replaceCode(map, falseModel, falseContent, matchStr);
+                        html += compileCode(map, falseModel, falseContent, matchStr);
                     }
                 } else {
-                    html += replaceCode(map, model, content, matchStr);
+                    html += compileCode(map, model, content, matchStr);
                 }
             });
             return html;
@@ -411,10 +420,6 @@
             }
         }
     });
-    var core_arr = [],
-        core_slice = core_arr.slice;
-    var core_replace = whitespace.replace;
-    var replace_cb, replace_value;
     v2.extend(String.prototype, {
         toCode: function () {
             return makeCode(this);
@@ -425,25 +430,20 @@
             }
             return format(this, arguments);
         },
-        compile: function (json) {
+        eval: function (json) {
             return linqCode(json, this);
         },
-        replace: function (json, showMatchStr) {
-            if (replace_cb || !(replace_cb = json == null || v2.type(json) === "object")) {
-                if (arguments.length > 2) {
-                    return core_replace.call(this, core_slice.call(arguments));
-                }
-                return core_replace.call(this, json, showMatchStr);
-            }
-            replace_value = replace(this, json, showMatchStr);
-            replace_cb = false;
-            return replace_value;
+        map: function (json, showMatchStr) {
+            return replace(json, showMatchStr);
+        },
+        compile: function (json, showMatchStr) {
+            return compile(this, json, showMatchStr);
         },
         if: function (json, showMatchStr) {
             return judge(this, json, showMatchStr);
         },
         each: function (json, showMatchStr) {
-            return forEach(this, json, showMatchStr);
+            return forEach(this, json, showMatchStr); 
         }
     });
     var typeCb = {
@@ -458,10 +458,16 @@
                 if (value) return linqCode(control.variable, value);
             }
         },
-        "$": {
+        "@": {
             type: "string",
             exec: function (control, value) {
                 if (value) return replace(value, control.variable);
+            }
+        },
+        "$": {
+            type: "string",
+            exec: function (control, value) {
+                if (value) return compile(value, control.variable);
             }
         }
     });

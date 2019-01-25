@@ -28,19 +28,26 @@ interface String {
      */
     format(args: ArrayLike<any>): string;
     /**
-     * 编译字符串。
+     * 执行字符串。
      * @param json 参数。
      * @returns 返回字符串的运算结果。
      * @example "a + b".compile({a:1, b:2}) // => 3;
      */
-    compile(json: VBtonsoft.PlainObject): any;
+    eval(json: VBtonsoft.PlainObject): any;
     /**
-     * 替换字符串。
+     * 映射字符串。
      * @param json 参数。
      * @param showMatchStr 没有找到属性的时候释放显示原字符串。
      * @see \`{@link https://www.cnblogs.com/vbing/p/10048901.html }\`
      */
-    replace(json: VBtonsoft.PlainObject, showMatchStr?: boolean): string;
+    map(json: VBtonsoft.PlainObject, showMatchStr?: boolean): string;
+    /**
+     *编译字符串
+     * @param json 参数。
+     * @param showMatchStr 没有找到属性的时候释放显示原字符串。
+     * @see \`{@link https://www.cnblogs.com/vbing/p/10048901.html }\`
+     */
+    compile(json: VBtonsoft.PlainObject, showMatchStr?: boolean): string;
     /**
      * 使用判断的方式格式化字符串。
      * @param json 参数。
