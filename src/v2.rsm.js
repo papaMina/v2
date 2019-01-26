@@ -292,7 +292,7 @@
         });
     }
     var rcore_match = /\{(?![0-9]+)([\w-]+)((?:\.[\w-]+)+)?\}/g;
-    function replace(json, showMatchStr) {
+    function replace(string, json, showMatchStr) {
         return string.replace(rcore_match, function (matchStr, key, descendant) {
             if (key in json) {
                 key = linqCode(json, descendant, key, true);
@@ -301,7 +301,7 @@
             return showMatchStr ? matchStr : "";
         });
     }
-    var area = "\\{" + whitespace + "*([$^])?" + formatCode(quotes_chars, 1) + whitespace + "*\\}";//执行域
+    var area = "\\{" + whitespace + "*([@$^])?" + formatCode(quotes_chars, 1) + whitespace + "*\\}";//执行域
 
     var bag = "(?:[^\\(\\)]+?)";
     var condition_current, condition_ultimate;
@@ -386,8 +386,11 @@
     }
     v2.extend({
         compilers: {
+            "@": function (json, string, showMatchStr) {
+                return replace(string, json, showMatchStr);
+            },
             "$": function (json, string, showMatchStr) {
-                return replace(string, json, !!showMatchStr);
+                return compile(string, json, showMatchStr);
             },
             "^": function (json, string) {
                 return linqCode(json, string);
@@ -434,7 +437,7 @@
             return linqCode(json, this);
         },
         map: function (json, showMatchStr) {
-            return replace(json, showMatchStr);
+            return replace(this, json, showMatchStr);
         },
         compile: function (json, showMatchStr) {
             return compile(this, json, showMatchStr);
@@ -443,13 +446,14 @@
             return judge(this, json, showMatchStr);
         },
         each: function (json, showMatchStr) {
-            return forEach(this, json, showMatchStr); 
+            return forEach(this, json, showMatchStr);
         }
     });
     var typeCb = {
-        each: 4,
-        if: 2,
-        replace: 1
+        each: 8,
+        if: 4,
+        compile: 2,
+        map: 1
     };
     v2.extend(v2.wildCards, {
         "^": {

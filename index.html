@@ -64,12 +64,12 @@
         </div>
     </div>
     <script>
-        var string = '{name.v2 +"和"+ name?.vue}都是{level?["very"]}实用的{type.slice(2)}，包含很多有趣的功能。'.replace({ name: { v2: "v2", vue: "vue" }, level: { very: "【非常】" }, type: "前端轻量级框架" });
+        var string = '{name.v2 +"和"+ name?.vue}都是{level?["very"]}实用的{type.slice(2)}，包含很多有趣的功能。'.compile({ name: { v2: "v2", vue: "vue" }, level: { very: "【非常】" }, type: "前端轻量级框架" });
         console.log(string); // => v2和vue都是【非常】实用的轻量级框架，包含很多有趣的功能。
-        var string = '{name.v2 + "和" + name.vue}都是{level?.very}实用的{type.slice(2)}，包含很多有趣的功能。'.replace({ name: { v2: "v2", vue: "vue" }, type: "前端轻量级框架" });
+        var string = '{name.v2 + "和" + name.vue}都是{level?.very}实用的{type.slice(2)}，包含很多有趣的功能。'.compile({ name: { v2: "v2", vue: "vue" }, type: "前端轻量级框架" });
         console.log(string); // => v2和vue都是实用的轻量级框架，包含很多有趣的功能。
 
-        var string = "{.?.name}是一个优秀的前端框架？".replace(null);
+        var string = "{.?.name}是一个优秀的前端框架？".map(null);
         console.log(string); // => 是一个优秀的前端框架？
 
         var string = '问：v2是一个优秀的前端框架么？答：`${if(isGood) { ^"appraise+"(票数："+ votes * platform +")"" } else if (isCommon) { "一般" } else { "否" } }`。'.if({ isGood: true, isCommon: true, appraise: "非常棒的", votes: 1024, platform: 5 });
@@ -83,11 +83,11 @@
 
         var string = '<ul>`${for(var v in .){ if(v.show) { $"<li>{v.name}</li>" } else { $"<li><s>{v.name}<s></li>" } } }`</ul>'.each([{ show: true, name: "Vue" }, { show: true, name: "V2" }, { show: false, name: "Jquery" }, { show: true, name: "Bootstrap" }]);
         console.log(string); // => <ul><li>Vue</li><li>V2</li><li><s>Jquery<s></li><li>Bootstrap</li></ul>
-        console.log(v2.StringCb(7, "{a}+{b}+【`${for(var v<k> in .){ if(v>1){ $'参数“{k}”的值({v})大于1;' } else { ^'v+1024' } } }`】+【`${if(a>b){ ^'b'} else { ^'a' } }`】", { a: 2, b: 2.5, c: 3, d: 1 }));
+        console.log(v2.StringCb(13, "{a}+{b}+【`${for(var v<k> in .){ if(v>1){ $'参数“{k}”的值({v})大于1;' } else { ^'v+1024' } } }`】+【`${if(a>b){ ^'b'} else { ^'a' } }`】", { a: 2, b: 2.5, c: 3, d: 1 }));
 
         var timestamp = +new Date();
         v2.use({
-            "$text": "请输入{name}",
+            "@text": "请输入{name}",
             "&show": function (show) {
                 this.hide(show);
                 console.log(this.text);
