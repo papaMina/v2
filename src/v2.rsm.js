@@ -48,13 +48,15 @@
         brackets = "\\[[^\\[\\]]+\\]",
         parenthesis = "\\([^\\(\\)]*\\)",
         simple_tail = "(?:(?:\\??(?:\\." + word + "|" + brackets + ")(?:" + parenthesis + ")?)+)",
-        simple = word_ex_keywords + simple_tail;
+        simple = word_ex_keywords + simple_tail,
+        replace_pro = "(\\.|" + word + ")(" + simple_tail + ")";
 
     var rnot_letter = new RegExp(not_letter, "img"),
         rword = new RegExp("^" + word + "$", "i"),
         rif_word = new RegExp("^((" + word + ")\\??)((?=[.\\[])|$)", "i"),
         rbrackets = new RegExp("^(\\[([^\\[\\]]+)\\]\\??)", "gm"),
         rsimple = new RegExp("^" + simple + "?$", "i"),
+        rreplace = new RegExp("\\{" + replace_pro + "?\\}", "gm"),
         rreturn = new RegExp("^(" + whitespace + "*return" + whitespace + "+)"),
         rlamda_main = new RegExp("^(" + word + ")(\\.|\\?|\\[|$)"),
         rif_simple = new RegExp("(^|[^.?_)a-z0-9]|" + whitespace + "+|\\b)(" + simple + "+)(" + whitespace + "+|[^.?_(a-z0-9]|$)", "img"),
@@ -291,10 +293,10 @@
             return showMatchStr ? matchStr : "";
         });
     }
-    var rcore_match = /\{(?![0-9]+)([\w-]+)((?:\.[\w-]+)+)?\}/g;
     function replace(string, json, showMatchStr) {
-        return string.replace(rcore_match, function (matchStr, key, descendant) {
-            if (key in json) {
+        return string.replace(rreplace, function (matchStr, key, descendant) {
+            if (json == null) return showMatchStr ? matchStr : "";
+            if (key === "." || key in json) {
                 key = linqCode(json, descendant, key, true);
                 return (key || key === 0) ? key : '';
             }
