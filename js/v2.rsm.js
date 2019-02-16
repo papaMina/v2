@@ -1,5 +1,5 @@
 ﻿(function (factory) {
-    if (typeof define === 'function' && define.amd) {
+    if (typeof define === 'function') {
         define(['v2'], factory);
     } else if (typeof module === 'object' && module.exports) {
         module.exports = function (root, v2kit) {
@@ -19,7 +19,6 @@
     }
 }(function (v2) {
     'use strict';
-
     var whitespace = "[\\x20\\t\\r\\n\\f]";
     var formatCache = v2.makeCache(function (i) {
         return new RegExp("\\{" + (i - 1) + "\\}", "gm");
@@ -425,30 +424,30 @@
             }
         }
     });
-    v2.extend(String.prototype, {
-        toCode: function () {
-            return makeCode(this);
+    v2.rsm = {
+        toCode: makeCode,
+        eval: function (string, json) {
+            return linqCode(json, string);
         },
+        map: replace,
+        compile: compile,
+        if: judge,
+        each: forEach
+    };
+    v2.each(v2.rsm, function (value, key) {
+        String.prototype[key] = function (json, showMatchStr) {
+            return value(this, json, showMatchStr);
+        };
+    });
+    v2.extend(v2.rsm, {
+        format: format
+    });
+    v2.extend(String.prototype, {
         format: function (/*..args*/) {
             if (arguments.length === 1) {
                 return format(this, arguments[0]);
             }
             return format(this, arguments);
-        },
-        eval: function (json) {
-            return linqCode(json, this);
-        },
-        map: function (json, showMatchStr) {
-            return replace(this, json, showMatchStr);
-        },
-        compile: function (json, showMatchStr) {
-            return compile(this, json, showMatchStr);
-        },
-        if: function (json, showMatchStr) {
-            return judge(this, json, showMatchStr);
-        },
-        each: function (json, showMatchStr) {
-            return forEach(this, json, showMatchStr);
         }
     });
     var typeCb = {
@@ -458,19 +457,19 @@
         map: 1
     };
     v2.extend(v2.wildCards, {
-        "^": {
+        "^": { // eval
             type: "string",
             exec: function (control, value) {
                 if (value) return linqCode(control.variable, value);
             }
         },
-        "@": {
+        "@": { // map
             type: "string",
             exec: function (control, value) {
                 if (value) return replace(value, control.variable);
             }
         },
-        "$": {
+        "$": { // compile
             type: "string",
             exec: function (control, value) {
                 if (value) return compile(value, control.variable);
@@ -482,5 +481,5 @@
             string = string[type](json, showMatchStr);
         });
         return string;
-    };
+    }; 
 }));

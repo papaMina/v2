@@ -6,8 +6,9 @@
      * @param json 格式化字符的入参对象。
      * @param showMatchStr 没有找到属性的时候释放显示原字符串。
      */
-    StringCb(type: number, string: string, json: VBtonsoft.PlainObject, showMatchStr?: boolean): string;
+    StringCb(type: number, string: string, json: Yep.PlainObject, showMatchStr?: boolean): string;
 }
+
 
 interface String {
     /**
@@ -33,35 +34,35 @@ interface String {
      * @returns 返回字符串的运算结果。
      * @example "a + b".compile({a:1, b:2}) // => 3;
      */
-    eval(json: VBtonsoft.PlainObject): any;
+    eval(json: Yep.PlainObject): any;
     /**
      * 映射字符串。
      * @param json 参数。
      * @param showMatchStr 没有找到属性的时候释放显示原字符串。
      * @see \`{@link https://www.cnblogs.com/vbing/p/10048901.html }\`
      */
-    map(json: VBtonsoft.PlainObject, showMatchStr?: boolean): string;
+    map(json: Yep.PlainObject, showMatchStr?: boolean): string;
     /**
      *编译字符串
      * @param json 参数。
      * @param showMatchStr 没有找到属性的时候释放显示原字符串。
      * @see \`{@link https://www.cnblogs.com/vbing/p/10048901.html }\`
      */
-    compile(json: VBtonsoft.PlainObject, showMatchStr?: boolean): string;
+    compile(json: Yep.PlainObject, showMatchStr?: boolean): string;
     /**
      * 使用判断的方式格式化字符串。
      * @param json 参数。
      * @param showMatchStr 没有找到属性的时候释放显示原字符串。
      * @see \`{@link https://www.cnblogs.com/vbing/p/10050075.html }\`
      */
-    if(json: VBtonsoft.PlainObject, showMatchStr?: boolean): string;
+    if(json: Yep.PlainObject, showMatchStr?: boolean): string;
     /**
      * 使用遍历的方式格式化字符串。
      * @param json 参数。
      * @param showMatchStr 没有找到属性的时候释放显示原字符串。
      * \`{@link https://www.cnblogs.com/vbing/p/10050240.html }\`
      */
-    each(json: VBtonsoft.PlainObject, showMatchStr?: boolean): string;
+    each(json: Yep.PlainObject, showMatchStr?: boolean): string;
     /**
      * 使用遍历的方式格式化字符串。
      * @param array 参数。

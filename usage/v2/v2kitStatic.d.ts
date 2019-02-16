@@ -1,5 +1,29 @@
-﻿interface V2kitStatic {
-    readonly fn: VBtonsoft.V2Control,
+﻿declare namespace Yep {
+    /** html 选择器（Emment/ZenCoding） */
+    type htmlString = string;
+    interface Hooks {
+        /**
+         * 获取属性值
+         * @param elem 元素
+         * @param computed 是否计算
+         * @param extra 尝试转为数字
+         */
+        get(elem: Element, computed: boolean, extra: any): any,
+        /**
+         * 设置属性值
+         * @param elem 元素
+         * @param value 属性值
+         * @param extra 尝试转为数字
+         */
+        set(elem: Element, value: string, extra: any): any
+    }
+}
+
+interface V2kitStatic {
+    /** 渲染控件 */
+    (tag: string, options?: Yep.UsePlainObject): Yep.V2Control,
+    /** 控件原型 */
+    readonly fn: Yep.V2Control,
     /**
      * 获取对象数据类型
      * @param object 需要识别的对象。
@@ -379,21 +403,21 @@
      */
     isPlainObject(object: any): boolean;
     /** 通配符，当对象的 key 第一个字符与 通配符的第一个字符相同，并且该 key 的值类型满足通配符的 type 值时，控件运行的时候会执行通配符的 exec 方法。*/
-    wildCards: VBtonsoft.WildCards;
+    wildCards: Yep.WildCards;
     /**
      * 控件准备。
      * @param tag 控件的tag名称。
      * @param callback 回调函数。
      * @returns 返回控件实例化对象。
      */
-    ready(tag: string, callback: (tag: string) => any): VBtonsoft.V2Control;
+    ready(tag: string, callback: (tag: string) => any): Yep.V2Control;
     /**
      * 控件准备。
      * @param tag 控件的tag名称。
      * @param callback 回调函数。
      * @returns 返回控件实例化对象。
      */
-    ready(tag: string, callback: (tag: string, option: VBtonsoft.PlainObject) => any): VBtonsoft.V2Control;
+    ready(tag: string, callback: (tag: string, option: Yep.PlainObject) => any): Yep.V2Control;
     /**
      * 将字符串按照空格分割，作为 A。
      * @param string 字符串。
@@ -412,14 +436,14 @@
      * @param callback 回调函数。
      * @returns 当字符串没有缓存的时候，调用回调函数并将结果存为该字符串的缓存，否则直接返回字符串的缓存。
      */
-    makeCache<T>(callback: (this: VBtonsoft.PlainObject<T>, string: string) => T): (string: string) => T;
+    makeCache<T>(callback: (this: Yep.PlainObject<T>, string: string) => T): (string: string) => T;
     /**
      * 生成缓存。
      * @param callback 回调函数。
      * @param objectN 返回的函数参数。
      * @returns 当字符串没有缓存的时候，调用回调函数并将结果存为该字符串的缓存，否则直接返回字符串的缓存。
      */
-    makeCache<T>(callback: (this: VBtonsoft.PlainObject<T>, string: string, ...objectN: any[]) => T): (string: string, ...objectN: any[]) => T;
+    makeCache<T>(callback: (this: Yep.PlainObject<T>, string: string, ...objectN: any[]) => T): (string: string, ...objectN: any[]) => T;
     /**
      * 以命名空间的形式缓存(将option存到命名空间中)。
      * @param objectCreate 返回值构造器。
@@ -433,7 +457,7 @@
      * @param objectCallback 返回值新增属性函数。
      * @returns 设置命名空间数据或返回字符串命名空间的所有数据。
      */
-    makeNamespaceCache<T>(objectCreate: (string: string) => VBtonsoft.PlainObject<T>, objectCallback: (object: VBtonsoft.PlainObject<T>, option: T, string: string) => any): (namespace: string, option?: T) => T;
+    makeNamespaceCache<T>(objectCreate: (string: string) => Yep.PlainObject<T>, objectCallback: (object: Yep.PlainObject<T>, option: T, string: string) => any): (namespace: string, option?: T) => T;
     /**
      * 判断当前对象的nodeName是否与tag相同（当tag为空或者为“*”时，对象满足Node对象就返回true），不区分大小写。
      * @param node node对象。
@@ -445,25 +469,25 @@
      * @param tag tag名称。
      * @returns 返回tag控件的所有配置内容。
      */
-    use(tag: string): Array<VBtonsoft.PlainObject>;
+    use(tag: string): Array<Yep.PlainObject>;
     /**
      * 设置控件的全局属性或方法。
      * @param option 需要设置的对象。
      */
-    use(option: VBtonsoft.PlainObject): any;
+    use(option: Yep.UsePlainObject): any;
     /**
      * 设置tag控件的配置。
      * @param tag tag名称。
      * @param option 需要设置的对象。
      */
-    use(tag: string, option: VBtonsoft.PlainObject): VBtonsoft.PlainObject;
+    use(tag: string, option: Yep.UsePlainObject): any;
     /**
      * 类型集水池
      * @param typeCb 集水池。
      * @param type 类型（集水池中的值或集水池中多个值的和）
      * @param callback 回调函数（当 (type&typeCb[key])==typeCb[key]时调用）。
      */
-    typeCb(typeCb: VBtonsoft.PlainObject<number>, type: number, callback: (propertyName: string, valueOfProperty: number) => any): any;
+    typeCb(typeCb: Yep.PlainObject<number>, type: number, callback: (propertyName: string, valueOfProperty: number) => any): any;
     /**
      * 日志（调用 console.log 方法打印消息）。
      * @param message 消息内容。
@@ -481,4 +505,210 @@
      * @param type 类型(值：[1,31])。
      */
     log(message: string, type: number, logAll: true): any;
+}
+
+/** DOM */
+interface V2kitStatic {
+    /** 属性修复 */
+    propFix: Yep.PlainObject<string>,
+    /** css 钩子 */
+    cssHooks: Yep.Hooks,
+    /** 是否支持数字型 */
+    cssNumber: Yep.PlainObject<boolean>,
+    /** css 属性 */
+    cssProps: Yep.PlainObject<string>,
+    /**
+     * item 是不是 main 的子孙节点
+     * @param main 主元素
+     * @param item 子元素
+     */
+    contains(main: Element, item: Element): boolean,
+    /**
+     * 绑定事件
+     * @param elem 元素
+     * @param types 事件类型（多个时以空格分割）
+     * @param fn 事件
+     * @param selector 作用子元素的选择器
+     */
+    on(elem: Element, types: string, fn: Function, selector?: string): any,
+    /**
+     * 解绑事件
+     * @param elem 元素
+     * @param types 事件类型（多个时以空格分割）
+     * @param fn 事件
+     * @param selector 作用子元素的选择器
+     */
+    off(elem: Element, types: string, fn: Function, selector?: string): any,
+    /**
+     * 添加类名
+     * @param elem 元素
+     * @param value 类名（多个时以空格分割）
+     */
+    addClass(elem: Element, value: string): any,
+    /**
+     * 移除类名
+     * @param elem 元素
+     * @param value 类名（多个时以空格分割）
+     */
+    removeClass(elem: Element, value: string): any,
+    /**
+     * 是否包含类名
+     * @param elem 元素
+     * @param value 类名
+     * @returns true表示包含，否则，不包含。
+     */
+    hasClass(elem: Element, value: string): boolean,
+    /**
+     * 如果元素包含名为“value”的类名，则移除该类名，否则添加该类名。
+     * @param elem 元素
+     * @param value 类名
+     */
+    toggleClass(elem: Element, value: string): V2Control,
+    /**
+     * 如果“toggle”为true，向元素添加类名“value”，否则移除类名“value”。
+     * @param elem 元素
+     * @param value 类名
+     * @param toggle 开关
+     */
+    toggleClass(elem: Element, value: string, toggle: boolean): V2Control,
+    /**
+     * 获取指定属性名称的属性值
+     * @param elem 元素
+     * @param name 属性名称
+     */
+    attr(elem: Element, name: string): string,
+    /**
+     * 获取指定属性名称的属性值集合
+     * @param elem 元素
+     * @param name 属性名称集合
+     */
+    attr(elem: Element, name: Array<string>): Yep.PlainObject<string>,
+    /**
+     * 设置指定属性名称的属性值集合
+     * @param elem 元素
+     * @param name 属性名称集合
+     */
+    attr(elem: Element, name: Yep.PlainObject): any,
+    /**
+     * 设置指定属性名称的属性值集合
+     * @param elem 元素
+     * @param name 属性名称
+     * @param value 属性值
+     */
+    attr(elem: Element, name: string, value: any): any,
+    /**
+     * 移除指定名称的属性
+     * @param elem 元素
+     * @param value 属性名称（多个以空格区分）
+     */
+    removeAttr(elem: Element, value: string): any,
+    /**
+     * 获取指定属性名称的属性值
+     * @param elem 元素
+     * @param name 属性名称
+     */
+    prop(elem: Element, name: string): string,
+    /**
+     * 获取指定属性名称的属性值集合
+     * @param elem 元素
+     * @param name 属性名称集合
+     */
+    prop(elem: Element, name: Array<string>): Yep.PlainObject<string>,
+    /**
+     * 设置指定属性名称的属性值集合
+     * @param elem 元素
+     * @param name 属性名称集合
+     */
+    prop(elem: Element, name: Yep.PlainObject): any,
+    /**
+     * 设置指定属性名称的属性值集合
+     * @param elem 元素
+     * @param name 属性名称
+     * @param value 属性值
+     */
+    prop(elem: Element, name: string, value: any): any,
+    /**
+     * 移除指定名称的属性
+     * @param elem 元素
+     * @param value 属性名称（多个以空格区分）
+     */
+    removeProp(elem: Element, value: string): any,
+    /**
+     * 交换（交换后调用回调函数，执行回调函数后恢复元素属性到交换前状态）
+     * @param elem 元素
+     * @param options 元素属性配置
+     * @param callback 回调函数
+     * @param args 回调函数参数
+     * @returns 回调函数返回值
+     */
+    swap(elem: Element, options: Yep.PlainObject<string>, callback: Function, args?: Array<any>): any,
+    /**
+     * 获取style指定属性名称的值
+     * @param elem 元素
+     * @param name 属性名称
+     */
+    style(elem: Element, name: string): string,
+    /**
+     * 设置style指定属性名称的值
+     * @param elem 元素
+     * @param name 属性名称
+     * @param value 属性值
+     * @param extra 尝试转为数字
+     */
+    style(elem: Element, name: string, value: any, extra?: any): any,
+    /**
+     * 获取指定属性名称的值
+     * @param elem 元素
+     * @param name 属性名称
+     * @param extra 尝试转为数字
+     */
+    css(elem: Element, name: string, extra?: any),
+    /**
+     * DOM操作
+     * @param elem 元素
+     * @param args 参数
+     * @param table 表格修复
+     * @param callback 回调函数
+     */
+    domManip(elem: Element, args: Array<number | string | Element>, table: boolean, callback: Function): any,
+    /**
+    * 向元素追加子元素
+    * @param elem 元素
+    * @param args 元素集合
+    */
+    append(elem: Element, args: Array<number | string | Element>): any,
+    /**
+     * 向元素首部插入子元素
+     * @param elem 元素
+     * @param args 元素集合
+     */
+    prepend(elem: Element, args: Array<number | string | Element>): any,
+    /**
+     * 在元素之前插入元素
+     * @param elem 元素
+     * @param args 元素集合
+     */
+    before(elem: Element, args: Array<number | string | Element>): any,
+    /**
+     * 在元素之后插入元素
+     * @param elem 元素
+     * @param args 元素集合
+     */
+    after(elem: Element, args: Array<number | string | Element>): any,
+    /**
+     * 替换元素
+     * @param elem 被替换的元素
+     * @param value 生成用来替换元素的内容
+     */
+    replaceWith(elem: Element, value: Element | string | number): any,
+    /**
+     * 清空指定元素所有子节点
+     * @param elem 元素
+     */
+    empty(elem: Element): any,
+    /**
+     * html 序列化
+     * @param html 序列化内容
+     */
+    htmlSerialize(html: Yep.htmlString): string
 }

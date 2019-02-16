@@ -190,6 +190,24 @@
         day: function (date) {
             return v2.date(date).getDate();
         },
+        dayWeek: function (date) {
+            return v2.date(date).getDay();
+        },
+        dayYear: function (date) {
+            date = v2.date(date);
+            return Math.ceil((date - new Date(date.getFullYear(), 1, 1)) / (24 * 60 * 60 * 1000)) + 1;
+        },
+        dayCount: function (year, month) {
+            if (arguments.length < 2) {
+                if (!v2.isDate(year)) return -1;
+                month = year.getMonth() + 1;
+                year = year.getFullYear();
+            }
+            if (month == 2) {
+                return v2.date.isLeapYear(year) ? 29 : 28;
+            }
+            return (month % 2 == 0 ? month < 7 : month > 8) ? 30 : 31;
+        },
         week: function (date) {
             date = v2.date(date);
             return Math.ceil((date.getDate() + 6 - date.getDay()) / 7);
@@ -205,17 +223,6 @@
         },
         year: function (date) {
             return v2.date(date).getFullYear();
-        },
-        dayCount: function (year, month) {
-            if (arguments.length < 2) {
-                if (!v2.isDate(year)) return -1;
-                month = year.getMonth() + 1;
-                year = year.getFullYear();
-            }
-            if (month == 2) {
-                return v2.date.isLeapYear(year) ? 29 : 28;
-            }
-            return (month % 2 == 0 ? month < 7 : month > 8) ? 30 : 31;
         },
         format: function (date, fmt) {
             date = v2.date(date);
