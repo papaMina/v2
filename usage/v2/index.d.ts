@@ -40,7 +40,6 @@
          * @param disabled 为true时禁用，否则启用
          */
         disabled(disabled: boolean): any,
-
         /**
          * 提取元素
          * @param selector 元素选择器
@@ -260,6 +259,12 @@
     }
     /** 控件 */
     interface V2Control extends V2ControlBase {
+        /**
+         * 控件内部构造器
+         * @param tag TAG
+         * @param options 配置项
+         */
+        constructor(tag: string, options: V2ControlExtensions): V2ControlExtensions,
         /** 版本号 */
         readonly v2: string,
         /** tag名称 */
@@ -270,6 +275,8 @@
         readonly isReady: boolean,
         /** 入参变量(入参) */
         readonly variable: PlainObject,
+        /** 所有者，拥有者，隶属于 */
+        readonly owner: V2Control,
         /** 为真时采用“max-width”和“max-height”限制控件大小，否则采用“width”和“height”限制控件大小. 默认：false*/
         limit: boolean,
         /** 是否加载控件的时候加载数据，为真并且存在“ajax”方法时，在“render”方法完成后自动调用“ajax”方法并等待数据加载完成后继续渲染控件，否则控件直接渲染完成。默认：false */
@@ -310,7 +317,7 @@
         [key: string]: T;
     }
     /** 插件对象 */
-    interface UsePlainObject extends Yep.V2Control {
+    interface V2ControlExtensions extends V2Control {
         [key: string]: any;
     }
 }

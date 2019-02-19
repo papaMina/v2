@@ -21,7 +21,7 @@
 
 interface V2kitStatic {
     /** 渲染控件 */
-    (tag: string, options?: Yep.UsePlainObject): Yep.V2Control,
+    (tag: string, options?: Yep.V2ControlExtensions): Yep.V2Control,
     /** 控件原型 */
     readonly fn: Yep.V2Control,
     /**
@@ -398,7 +398,7 @@ interface V2kitStatic {
      */
     isArray(object: any): object is Array<any>;
     /**
-     * 判断对象是不是常规数组。
+     * 判断对象是不是常规对象。
      * @param object 需要判断的对象。
      */
     isPlainObject(object: any): boolean;
@@ -474,13 +474,13 @@ interface V2kitStatic {
      * 设置控件的全局属性或方法。
      * @param option 需要设置的对象。
      */
-    use(option: Yep.UsePlainObject): any;
+    use(option: Yep.V2ControlExtensions): any;
     /**
      * 设置tag控件的配置。
      * @param tag tag名称。
      * @param option 需要设置的对象。
      */
-    use(tag: string, option: Yep.UsePlainObject): any;
+    use(tag: string, option: Yep.V2ControlExtensions): any;
     /**
      * 类型集水池
      * @param typeCb 集水池。
@@ -563,14 +563,25 @@ interface V2kitStatic {
      * @param elem 元素
      * @param value 类名
      */
-    toggleClass(elem: Element, value: string): V2Control,
+    toggleClass(elem: Element, value: string): Yep.V2Control,
     /**
      * 如果“toggle”为true，向元素添加类名“value”，否则移除类名“value”。
      * @param elem 元素
      * @param value 类名
      * @param toggle 开关
      */
-    toggleClass(elem: Element, value: string, toggle: boolean): V2Control,
+    toggleClass(elem: Element, value: string, toggle: boolean): Yep.V2Control,
+    /**
+     * 获取元素文本内容
+     * @param elem 元素
+     */
+    text(elem: Element): string,
+    /**
+     * 将元素内容（包含元素）替换为指定文本。
+     * @param elem 元素
+     * @param value 文本
+     */
+    text(elem: Element, value: string): any,
     /**
      * 获取指定属性名称的属性值
      * @param elem 元素

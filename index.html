@@ -7,6 +7,11 @@
     <link href="js/lib/bootstrap/bootstrap.css" rel="stylesheet" />
 </head>
 <body>
+    <div id="app">
+        <yep-button-group buttons="buttons">
+        </yep-button-group>
+        <yep-button class="btn-danger" message="测试" @click="alert(text)"></yep-button>
+    </div>
     <div class="ui ui-entry">1</div>
     <div class="ui ui-entry">2</div>
     <div class="ui ui-series">
@@ -62,6 +67,6 @@
             </div>
         </div>
     </div>
-    <button disabled="disabled"></button>
+    <button id="test-group" class="btn-group"></button>
 </body>
 </html>

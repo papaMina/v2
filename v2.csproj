@@ -61,12 +61,19 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="js\appsettings.js" />
+    <Content Include="js\lib\ajax\axios.js" />
+    <Content Include="js\lib\ajax\axios.min.js" />
+    <Content Include="js\lib\fonts\glyphicons-halflings-regular.svg" />
     <Content Include="js\lib\vue\vue.js" />
     <Content Include="js\lib\vue\vue.min.js" />
-    <Content Include="js\packages\v2.button.js" />
+    <Content Include="js\components\v2.button.js" />
+    <Content Include="js\components\v2.buttonGroup.js" />
+    <Content Include="js\components\v2.select.js" />
     <Content Include="js\views\index.js" />
     <Content Include="js\lib\bootstrap\bootstrap.css" />
     <Content Include="js\lib\bootstrap\bootstrap.min.css" />
+    <Content Include="js\vue.js" />
+    <Content Include="js\vue.min.js" />
     <Content Include="require.js" />
     <Content Include="require.min.js" />
     <Content Include="README.md" />
@@ -76,6 +83,10 @@
     <Content Include="src\v2.esm.css" />
     <Content Include="js\lib\bootstrap\bootstrap.css.map" />
     <Content Include="js\lib\bootstrap\bootstrap.min.css.map" />
+    <Content Include="js\lib\fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="js\lib\fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="js\lib\fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="js\lib\fonts\glyphicons-halflings-regular.woff2" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

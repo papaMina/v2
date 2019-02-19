@@ -56,6 +56,7 @@ v2.use("input.inputEdit", {
         console.log("inputEdit 构造函数");
     }
 });
+
 v2.use("input.*.inputEditV2", {
     init: function () {
         console.log("inputEditV2");
@@ -88,13 +89,32 @@ var x = v2("inputEditV2", {
 });
 
 define(function (require) {
-    var button = require('packages/v2.button');
     timestamp = +new Date();
+    var button = require('components/v2.buttonGroup');
+    //console.log(+new Date() - timestamp);
+    //var button = require('packages/v2.button');
+    console.log(+new Date() - timestamp);
     console.log(button({
-        text: '确定',
-        width: 120,
-        disabled: true,
-        addClass: 'btn-primary',
+        $: '#test-group',
+        data: {
+            buttons: [{
+                text: '确定',
+                width: 120,
+                addClass: 'btn-primary',
+                events: {
+                    click: 'click'
+                }
+            }, {
+                text: '确定',
+                width: 120,
+                //disabled: true,
+                dropdown: true,
+                addClass: 'btn-primary',
+                events: {
+                    click: 'click'
+                }
+            }]
+        },
         methods: {
             click: function () {
                 console.log('click');
@@ -102,6 +122,14 @@ define(function (require) {
         }
     }));
     console.log(+new Date() - timestamp);
+    //var x = require('components/yep-button');
+    //var x = require('components/yep-button-group');
+    //new Vue({
+    //    el: '#app',
+    //    data: {
+    //        buttons: [{ message: "测试1" }, { message: "测试2" }]
+    //    }
+    //});
 });
 console.log(+new Date() - timestamp);
 

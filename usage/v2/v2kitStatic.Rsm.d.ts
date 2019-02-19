@@ -1,4 +1,8 @@
 ﻿interface V2kitStatic {
+    /** 运算符 */
+    operators: Yep.PlainObject<Function>,
+    /** 编译规则 */
+    compilers: Yep.PlainObject<Function>,
     /**
      * 按照 type 方式格式化字符串。
      * @param type 类型（值区间：[1,7]）。

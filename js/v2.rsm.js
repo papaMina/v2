@@ -221,7 +221,7 @@
         chars = char + "*?",//多字符
         quotes_chars = "(['\"])(" + chars + ")\\1",//引号内的字符
         number = "(0|[1-9][0-9]*)(\\.[0-9]+)?",
-        simple_next_tail = whitespace + "*([*^<%>+/-])" + whitespace + "*" + "(" + number + "|" + formatCode(quotes_chars, 4) + "|(" + word + "|\\.)(" + simple_tail + ")?)",
+        simple_next_tail = whitespace + "*([%|*^+/-])" + whitespace + "*" + "(" + number + "|" + formatCode(quotes_chars, 4) + "|(" + word + "|\\.)(" + simple_tail + ")?)",
         simple_pro_tail = "(" + simple_tail + "?)?((" + formatCode(simple_next_tail, 4) + ")+)?" + whitespace + "*",
         simple_pro = whitespace + "*(" + word + "|\\.)" + simple_pro_tail;
 
@@ -248,10 +248,7 @@
                 agent = agent == null ? val : v2.operators[operator](agent, val);
             }
         });
-        if (callback) {
-            value = callback(value, agent);
-        }
-        return value;
+        return callback ? callback(value, agent) : agent == null ? value : agent;
     }
     function linqCode(object, string, key, simple) {
         var newString = string;
@@ -374,12 +371,12 @@
                 if (key) map[key] = k;
                 if (condition) {
                     if (key ? condition(v, k, data) : condition(v, data)) {
-                        html += compileCode(map, trueModel, trueContent, matchStr);
+                        html += compileCode(map, trueModel, trueContent, showMatchStr);
                     } else {
-                        html += compileCode(map, falseModel, falseContent, matchStr);
+                        html += compileCode(map, falseModel, falseContent, showMatchStr);
                     }
                 } else {
-                    html += compileCode(map, model, content, matchStr);
+                    html += compileCode(map, model, content, showMatchStr);
                 }
             });
             return html;
@@ -416,11 +413,8 @@
             "^": function (a, b) {
                 return Math.pow(a, b);
             },
-            ">": function (a, b) {
-                return a > b;
-            },
-            "<": function (a, b) {
-                return a < b;
+            "|": function (a, b) {
+                return a || b;
             }
         }
     });
@@ -481,5 +475,5 @@
             string = string[type](json, showMatchStr);
         });
         return string;
-    }; 
+    };
 }));
