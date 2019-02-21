@@ -17,6 +17,11 @@
     <div class="ui ui-series">
         <div class="ui ui-entry">1</div>
         <div class="ui ui-entry">2</div>
+        <fieldset>
+            <
+        </fieldset>
+        <input placeholder="" required="" name="" pattern=""/>
+        <textarea></textarea>
     </div>
     <div class="ui  ui-series ui-compose ui-horizontal">
         <div class="ui ui-entry">1</div>
@@ -56,7 +61,7 @@
     <input class="ui ui-entry ui-touch-response ui-click-response" />
     <button class="ui ui-entry ui-touch-response ui-click-response">提交</button>
     <div id="testId">
-        <div class="testClass" v-for="item in data">{{ item.xx }}</div>
+        <div class="testClass" v-text="{{xx}}" v-for="item in data">{{ item.xx }}</div>
         <div data-attr="testAttr" v-if="">
             <div v-else-if=""></div>
         </div>

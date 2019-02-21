@@ -73,28 +73,41 @@ v2.use("input.*.inputEditV2", {
     }
 });
 
-var x = v2("inputEditV2", {
-    name: "单位名称1",
-    show: true,
-    access: true,
-    ajax: function () {
-        //this.base.commit();
-    },
-    "hide(access,limit)": function (access, limit) {
-        this.base.hide();
-    },
-    commit: function () {
-        console.log("commit");
-    }
-});
+//var x = v2("inputEditV2", {
+//    name: "单位名称1",
+//    show: true,
+//    access: true,
+//    ajax: function () {
+//        //this.base.commit();
+//    },
+//    "hide(access,limit)": function (access, limit) {
+//        this.base.hide();
+//    },
+//    commit: function () {
+//        console.log("commit");
+//    }
+//});
 
 define(function (require) {
     timestamp = +new Date();
-    var button = require('components/v2.buttonGroup');
+    var button = require('components/v2.button');
+    button({
+        dropdown: true,
+        addClass: 'btn-primary',
+        events: {
+            click: 'click'
+        },
+        methods: {
+            click: function () {
+                console.log('click');
+            }
+        }
+    });
+    var buttonGroup = require('components/v2.buttonGroup');
     //console.log(+new Date() - timestamp);
     //var button = require('packages/v2.button');
     console.log(+new Date() - timestamp);
-    console.log(button({
+    var v = buttonGroup({
         $: '#test-group',
         data: {
             buttons: [{
@@ -105,13 +118,19 @@ define(function (require) {
                     click: 'click'
                 }
             }, {
-                text: '确定',
-                width: 120,
+                //text: '确定',
+                //width: 120,
                 //disabled: true,
                 dropdown: true,
                 addClass: 'btn-primary',
+                data: [{
+                    id: 1,
+                    text: '测试'
+                }],
                 events: {
-                    click: 'click'
+                    $click: function () {
+                        console.log(this.selectedIndex);
+                    }
                 }
             }]
         },
@@ -120,7 +139,9 @@ define(function (require) {
                 console.log('click');
             }
         }
-    }));
+    });
+
+    console.log(v);
     console.log(+new Date() - timestamp);
     //var x = require('components/yep-button');
     //var x = require('components/yep-button-group');

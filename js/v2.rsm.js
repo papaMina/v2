@@ -221,7 +221,7 @@
         chars = char + "*?",//多字符
         quotes_chars = "(['\"])(" + chars + ")\\1",//引号内的字符
         number = "(0|[1-9][0-9]*)(\\.[0-9]+)?",
-        simple_next_tail = whitespace + "*([%|*^+/-])" + whitespace + "*" + "(" + number + "|" + formatCode(quotes_chars, 4) + "|(" + word + "|\\.)(" + simple_tail + ")?)",
+        simple_next_tail = whitespace + "*(\\??[?!*%^+/-])" + whitespace + "*" + "(" + number + "|" + formatCode(quotes_chars, 4) + "|(" + word + "|\\.)(" + simple_tail + ")?)",
         simple_pro_tail = "(" + simple_tail + "?)?((" + formatCode(simple_next_tail, 4) + ")+)?" + whitespace + "*",
         simple_pro = whitespace + "*(" + word + "|\\.)" + simple_pro_tail;
 
@@ -230,7 +230,7 @@
         rsimple_pro = new RegExp("^" + simple_pro + "$"),
         rsimple_pro_rep = new RegExp("\\{" + simple_pro + "\\}", "img");
     function linqNextCode(object, value, next) {
-        var agent, callback;
+        var _value, callback;
         matchCode(next, rsimple_pro_next, function (operator, val, _interger, _digits, quotes, string, key, descendant) {
             if (quotes) {
                 val = string;
@@ -240,15 +240,15 @@
             }
             if (operator === "+" || operator === "-") {
                 if (callback) {
-                    value = callback(value, agent);
+                    value = callback(value, _value);
                 }
-                agent = val;
+                _value = val;
                 callback = v2.operators[operator];
             } else {
-                agent = agent == null ? val : v2.operators[operator](agent, val);
+                _value = _value == null ? v2.operators[operator](value, val) : v2.operators[operator](_value, val);
             }
         });
-        return callback ? callback(value, agent) : agent == null ? value : agent;
+        return callback ? callback(value, _value) : _value == null ? value : _value;
     }
     function linqCode(object, string, key, simple) {
         var newString = string;
@@ -396,7 +396,7 @@
         },
         operators: {
             "+": function (a, b) {
-                return rnumber.test(a) && rnumber.test(b) ? +a + +b : a ? b ? a + b : a : b;
+                return rnumber.test(a) && rnumber.test(b) ? +a + +b : a + b;
             },
             "-": function (a, b) {
                 return a - b;
@@ -413,7 +413,34 @@
             "^": function (a, b) {
                 return Math.pow(a, b);
             },
-            "|": function (a, b) {
+            "!": function (a, b) {
+                return !b ? a : b;
+            },
+            "?": function (a, b) {
+                return a ? b : '';
+            },
+            "?+": function (a, b) {
+                return rnumber.test(a) && rnumber.test(b) ? +a + +b : a ? b ? a + b : a : b;
+            },
+            "?-": function (a, b) {
+                return a ? a - b : -b;
+            },
+            "?*": function (a, b) {
+                return a ? a * b : 1 * b;
+            },
+            "?/": function (a, b) {
+                return a ? a / b : 1 / b;
+            },
+            "?%": function (a, b) {
+                return a ? a % b : +b;
+            },
+            "?^": function (a, b) {
+                return a ? Math.pow(a, b) : +b;
+            },
+            "?!": function (a, b) {
+                return (a || !b) ? a : b;
+            },
+            "??": function (a, b) {
                 return a || b;
             }
         }

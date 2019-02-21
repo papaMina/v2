@@ -116,7 +116,7 @@
     function destroyObject(object, deep) {
         if (!object) return null;
         var elem;
-        if (object.v2 === version) {
+        if (object.yep === version) {
             if ((elem = object.$) && elem.jquery) {
                 elem = elem.get(0);
             }
@@ -125,7 +125,7 @@
         for (i in object) {
             value = object[i];
             if (value && deep && value !== object) {
-                if (value.destroy && value.v2 === version) {
+                if (value.destroy && value.yep === version) {
                     value.destroy(deep);
                 } else if (value.jquery) {
                     if (check_destroy(elem, function (node) { return value.is(node); })) {
@@ -218,20 +218,73 @@
         };
     };
     var deleteSurport = true;
-    function readonlyProperty(context, name, value) {
-        if (!deleteSurport) return context[name] = value;
-        try {
-            delete context[name];
-            Object.defineProperty(context, name, {
-                get: function () {
-                    return value;
-                }
-            });
-        } catch (_) {
-            deleteSurport = false;
-            context[name] = value;
+    v2.delete = function (obj, value) {
+        if (!obj || !value) return;
+        var i = 0, name;
+        value = value.match(rnotwhite);
+        while (name = value[i++]) {
+            if (!(name in obj)) return;
+            if (!deleteSurport) {
+                return obj[name] = undefined;
+            }
+            try {
+                delete obj[name];
+            } catch (_) {
+                obj[name] = undefined;
+                deleteSurport = false;
+            }
         }
     };
+    function defineFix(obj, name, attributes) {
+        var _value = attributes.value,
+            descriptor = {
+                get: attributes.get || function () {
+                    return _value;
+                }
+            };
+        if (!attributes.writable || 'set' in attributes) {
+            descriptor.set = attributes.set || function (value) {
+                _value = value;
+            };
+        }
+        Object.defineProperty(obj, name, descriptor);
+    }
+    v2.define = function (obj, name, attributes) {
+        if (!obj || !name || !attributes) return obj;
+        if (v2.isPlainObject(name)) {
+            return v2.each(name, function (attributes, name) {
+                return v2.define(obj, name, attributes);
+            }), obj;
+        }
+        var value = obj[name], callback = (value || value === 0 || value === false) && ('set' in attributes || !attributes.writable && !('get' in attributes)) && function () {
+            try {
+                obj[name] = value;
+            } catch (_) {
+                console.log(obj);
+                console.log(name);
+                console.log(value);
+            }
+        };
+        v2.delete(obj, name);
+        try {
+            Object.defineProperty(obj, name, attributes);
+        } catch (_) {
+            if (!('value' in attributes || 'writable' in attributes || 'configurable' in attributes || 'enumerable' in attributes)) throw _;
+            defineFix(obj, name, attributes);
+        };
+        if (callback) callback();
+        value = callback = null;
+        return obj;
+    };
+
+    v2.defineReadonly = function (obj, name, value) {
+        v2.define(obj, name, {
+            get: function () {
+                return value;
+            }
+        });
+    };
+
     var typeCache = makeCache(function (type) {
         var pattern = new RegExp("(^|\\|)" + type + "(\\||$)");
         return function (type) {
@@ -252,15 +305,13 @@
             }
         }
         if (arr) {
-            if (key === 'text') console.log(arr[0]);
-            wildCards[key] = arr.length > 1 ? arr : arr[0];
+            wildCards[key.indexOf('set') === 0 && key.length > 4 ? key[3].toLowerCase() + key.slice(4) : key] = arr.length > 1 ? arr : arr[0];
         }
         return key;
     }
     function typeWildCard(wildCards, type, callback) {
         var isFunction = v2.isFunction(type);
         v2.each(wildCards, function (value, key) {
-            if (key === 'text') console.log(value);
             if (isFunction ? type(value.type) : value.type === type) {
                 callback(value, key);
             }
@@ -334,6 +385,29 @@
         };
         return new tagColection(tag);
     };
+    function ArrayThen(arr) {
+        v2.merge(this, arr);
+    }
+    ArrayThen.prototype = {
+        length: 0,
+        when: function (callback) {
+            return new ArrayThen(v2.map(this, function (elem, i, arr) {
+                if (callback(elem, i, arr)) {
+                    return elem;
+                }
+            }));
+        },
+        then: function (callback) {
+            return v2.each(this, callback);
+        },
+        eq: function (i) {
+            return new ArrayThen(i in this ? [this[i]] : []);
+        },
+        done: function (callback) {
+            return v2.each(this, callback), core_splice.call(this, 0, this.length);
+        }
+    };
+    ArrayThen.prototype.nth = ArrayThen.prototype.eq;
 
     var identity = 0,
         CurrentV2Control = null;
@@ -344,8 +418,9 @@
             options.owner = options.owner || this;
             options.$$ = options.$$ || options.owner.$;
 
-            var component = this.components[tag];
             this.$components = this.$components || {};
+
+            var component = this.components[tag = v2.camelCase(tag)];
 
             if (v2.isFunction(component)) {
                 return (this.$components[tag] || (this.$components[tag] = component(tag)))(options, tag);
@@ -353,7 +428,7 @@
             return v2(tag, component ? v2.improve(options, component) : options);
         },
         tag: "*",
-        v2: version,
+        yep: version,
         identity: 0,
         limit: false,
         access: false,
@@ -369,10 +444,63 @@
             pending: 0.5,
             init: 1,
             render: 2,
+            usb: 3,
             resolve: 4,
             commit: 8
         },
+        define: function (name, extra, userDefined) {
+            var my = this, contains;
+            if (v2.isPlainObject(name)) {
+                return v2.each(name, function (attributes, name) {
+                    my.define(name, attributes, userDefined);
+                }), this;
+            }
+            if (v2.isFunction(extra)) {
+                contains = name in this.$;
+                return v2.define(this, name, {
+                    get: (contains || userDefined) ? function () {
+                        return my.$[name];
+                    } : function () {
+                        return my.$.getAttribute(name);
+                    },
+                    set: contains ?
+                        function (value) {
+                            extra.call(my, my.$[name] = value || my.$[name]);
+                        } :
+                        userDefined ?
+                            function (value) {
+                                my.$[name] = extra.call(my, value) || value;
+                            } : function (value) {
+                                my.$.setAttribute(name, value + '');
+                                extra.call(my, my.$.getAttribute(name));
+                            }
+                });
+            }
+            if (v2.isPlainObject(extra)) {
+                return v2.define(this, name, extra);
+            }
+            v2.each(name.match(rnotwhite), function (name) {
+                contains = userDefined || name in my.$;
+                var attributes = {
+                    get: contains ? function () {
+                        return my.$[name];
+                    } : function () {
+                        return my.$.getAttribute(name);
+                    }
+                };
+                if (extra !== false) {
+                    attributes.set = contains ? function (value) {
+                        my.$[name] = value;
+                    } : function (value) {
+                        my.$.setAttribute(name, value + '');
+                    };
+                }
+                v2.define(my, name, attributes);
+            });
+            return this;
+        },
         take: function (selector, context) {
+            context = context || this.$;
             if (v2.take) {
                 return v2.take(selector, context);
             }
@@ -381,42 +509,46 @@
             }
             return selector;
         },
+        children: function () {
+            return new ArrayThen(v2.siblings(this.$.firstChild));
+        },
         baseConfigs: function (option) {
             this.base = this.base || {};
             this.init = function (tag) {
-                var node, element, context;
-                if (!option || !(element = option.$) && !(context = option.$$)) {
-                    return this.$$ = document.body, this.$ = this.$$.appendChild(document.createElement(tag || "div"));
+                tag = tag || "div";
+                var n, node, context;
+                if (!option || !(node = option.$) && !(context = option.$$)) {
+                    return this.$$ = document.body, this.$ = this.$$.appendChild(document.createElement(tag));
                 }
                 if (context) {
                     context = this.take(context, document);
                 }
                 context = context || document.body;
-                if (element) {
-                    element = this.take(element, context);
+                if (node) {
+                    node = this.take(node, context);
                 }
                 if (isArraylike(context)) context = context[0];
-                if (!element) {
-                    node = document.createElement(tag || "div");
+                if (!node) {
+                    n = document.createElement(tag);
                     if (context.nodeType) {// DOM
-                        context.appendChild(element = node);
+                        context.appendChild(node = n);
                     }
                 } else {
-                    if (isArraylike(element)) element = element[0];
-                    if (element.nodeType) {// DOM
-                        context = element.parentNode;
+                    if (isArraylike(node)) node = node[0];
+                    if (node.nodeType) {// DOM
+                        context = node.parentNode;
                     }
                 }
-                if (!v2.nodeName(element, tag)) {
-                    var html = element.outerHTML;
+                if (!v2.nodeName(node, tag)) {
+                    var html = node.outerHTML;
                     v2.append(xhtmlNode, [html.replace(rxhtmlTag, function (_all, tag_pre, tag_next) {
                         return _all.replace(tag_pre || tag_next, tag);
                     })]);
-                    var next = this.$.nextSibling;
-                    context.removeChild(element);
-                    context.insertBefore(element = xhtmlNode.lastChild, next);
+                    var next = node.nextSibling;
+                    context.removeChild(node);
+                    context.insertBefore(node = xhtmlNode.lastChild, next);
                 }
-                return this.$$ = context, this.$ = element;
+                return this.$$ = context, this.$ = node;
             };
         },
         build: function () {
@@ -430,6 +562,11 @@
                 defaults = {},
                 options = {},
                 variable = {},
+                errorCallback = function (condition, not) {
+                    if (not ? !condition : condition) {
+                        v2.error('Type mismatch.An extended type is different from a base type.');
+                    }
+                },
                 wildCards = this.wildCards || (this.wildCards = {}),
                 makeCallback = function (callback, key) {
                     if (callback.control === context) return callback;
@@ -464,7 +601,7 @@
                     tag = option.tag;
                     if (isFunction = type === "function") {
                         namespace += "." + tag;
-                        option = option(context, variable) || {};
+                        option = option(context.option || {}, context);
                     }
                     tag = option.tag || tag;
                     if (tag && (fn = option[v2.camelCase(tag)]) && v2.isFunction(fn)) {
@@ -474,18 +611,25 @@
                     v2.each(option, function (value, key) {
                         if (key === tag || value == null) return;
 
+                        _key = key;
+
                         type = v2.type(value);
 
-                        _value = (_contains = (_key = key) in context) ? context[key] : variable[key = initWildCards(wildCards, key, type)];
+                        _contains = key in context;
+
+                        _value = _contains ? context[key] : variable[key = initWildCards(wildCards, key, type)];
 
                         switch (type) {
                             case "function":
                                 if (match = rinject.exec(key)) {
                                     value = dependencyInjection(context, key = match[1], match[2], value);
                                 }
-                                if (fn = context[key]) {
+
+                                if (_value = context[key]) {
+                                    errorCallback(key in options ? options[key] : options[key] = v2.isFunction(_value), true);
+
                                     defaults[key] = value;
-                                    extendsCallback(context.base, key, fn);
+                                    extendsCallback(context.base, key, _value);
                                 }
                                 options[key] = true;
                                 context[key] = value;
@@ -493,6 +637,7 @@
                             case "array":
                             case "object":
                                 if (_contains) {
+                                    errorCallback(!_value || value.nodeType || v2.type(_value) === type, true);
                                     context[key] = (!_value || value.nodeType) ?
                                         value :
                                         type === "array" ?
@@ -540,12 +685,11 @@
                 };
             });
 
-            readonlyProperty(this, "v2", version);
-            readonlyProperty(this, "tag", this.tag);
-            readonlyProperty(this, "identity", ++identity);
-            readonlyProperty(this, "variable", variable);
-            readonlyProperty(this, "wildCards", wildCards);
-            readonlyProperty(this, "namespace", namespace);
+            v2.defineReadonly(this, "tag", this.tag);
+            v2.defineReadonly(this, "namespace", namespace);
+
+            v2.defineReadonly(this, 'variable', variable);
+            v2.defineReadonly(this, "identity", ++identity);
 
             initControls = (extendsCallback = (makeCallback = undefined));
         },
@@ -602,13 +746,12 @@
                 }
                 return sleep;
             };
-            var _value;
-            v2.use(this, {
-                '.val': function (value) {
-                    return arguments.length > 0 ? _value = value : _value;
-                }
-            });
             this.whenThen();
+        },
+        usb: function () {
+            this.define('disabled', function (value) {
+                this.toggleClass('disabled', !!value);
+            });
         },
         render: function (variable) {
             v2.each(this.namespace.split("."), function (tag) {
@@ -620,7 +763,9 @@
             renderWildCard(this, variable);
         },
         commit: function () {
-            this.on(this.events);
+            if (!this.skipOn) {
+                this.on(this.events);
+            }
         },
         invoke: function (callbak) {
             if (v2.isString(callbak)) {
@@ -686,18 +831,18 @@
             array = callback;
             callback = undefined;
         }
-        var type, isArray, key, deep, option;
+        var isArray, key, deep, option;
         var i = 1, len = array.length, target = array[0];
         if (typeof target === "boolean") {
             deep = target;
             target = array[i++];
         }
+        if (target && !(typeof target === 'object' || v2.isFunction(target))) {
+            target = null;
+        }
         if (i === len) {
             i -= 1;
             target = this;
-        }
-        if (target && !((type = v2.type(target)) === 'object' || type === 'function' || type === 'array')) {
-            target = null;
         }
         var extension = function (value, option) {
             if (value === option || option === undefined) return value;
@@ -1016,16 +1161,6 @@
                     visible :
                     'block' :
                 'none';
-        },
-        '&disabled': function (disabled) {
-            if (this.variable.disabled = !!disabled) {
-                this.addClass('disabled');
-                this.$.setAttribute('disabled', 'disabled');
-            } else {
-                this.removeClass('disabled');
-                this.$.removeAttribute('disabled');
-            }
-            return true;
         }
     });
 
@@ -1224,7 +1359,7 @@
         });
     }
     rbuggyQSA = new RegExp(rbuggyQSA.join("|"));
-    rbuggyMatches = new RegExp(rbuggyMatches.join("|"));
+    rbuggyMatches = rbuggyMatches.length && new RegExp(rbuggyMatches.join("|"));
 
     function select(selector, context) {
         if (!selector) return null;
@@ -1236,8 +1371,8 @@
             return select.query(selector, context || document);
         }
         if (selector.nodeType === 1) return selector;
-        if (selector.jquery) return selector.get(0);
-        if (selector.v2 === version) return selector.element;
+        if (isArraylike(selector)) return selector[0];
+        if (selector.yep === version) return selector.$;
     };
     var
         classCache = v2.makeCache(function (string) {
@@ -1256,7 +1391,7 @@
                 if ((match = rcombinators.exec(string))) {
                     matched = match.shift();
                     tokens.push({
-                        value: core_trim.call(matched),
+                        value: v2.trim(matched),
                         type: match[0].replace(rtrim, " ")
                     });
                     string = string.slice(matched.length);
@@ -1547,12 +1682,15 @@
                 };
             },
             "is": function (selector) {
-                return compileCache(selector.replace(rtrim, "$1"));
+                var matcher = compileCache(selector.replace(rtrim, "$1"));
+                return function (elem) {
+                    return !!matcher(elem, false, elem);
+                };
             },
             "not": function (selector) {
                 var matcher = compileCache(selector.replace(rtrim, "$1"));
                 return function (elem) {
-                    return !matcher(elem);
+                    return !matcher(elem, false, elem);
                 };
             },
             "has": function (selector) {
@@ -1562,7 +1700,7 @@
             },
             "contains": function (text) {
                 return function (elem) {
-                    return (elem.textContent || elem.innerText || getText(elem)).indexOf(text) > -1;
+                    return (elem.textContent || elem.innerText || v2.text(elem)).indexOf(text) > -1;
                 };
             },
             "selected": makeFunction(function (elem) {
@@ -1832,10 +1970,9 @@
         expr = expr.replace(rattributeQuotes, "='$1']");
         if (matchesSelector && (!rbuggyMatches || !rbuggyMatches.test(expr)) && !rbuggyQSA.test(expr)) {
             try {
-                var node = matches.call(elem, expr);
-                if (node || disconnectedMatch ||
-                    elem.document && elem.document.nodeType !== 11) {
-                    return node;
+                var r = matches.call(elem, expr);
+                if (r || disconnectedMatch || elem.document && elem.document.nodeType !== 11) {
+                    return r;
                 }
             } catch (e) { }
         }
@@ -2118,25 +2255,11 @@
             return classCache(value).test(elem.className);
         },
         attr: function (elem, name, value) {
-            if (v2.isArray(name)) {
-                if (value) {
-                    return v2.each(name, function (key) {
-                        v2.attr(elem, key, value);
-                    });
-                }
-                var map = {};
-                v2.each(name, function (key) {
-                    map[key] = v2.attr(elem, key);
-                });
-                return map;
-            }
-            if (v2.isPlainObject(name)) {
-                return v2.each(name, function (value, key) {
-                    v2.attr(elem, key, value);
-                });
-            }
             if (value === undefined) {
                 return elem.getAttribute(name);
+            }
+            if (value === null) {
+                return v2.removeAttr(elem, name);
             }
             elem.setAttribute(name, value + "");
         },
@@ -2148,26 +2271,12 @@
             }
         },
         prop: function (elem, name, value) {
-            if (v2.isArray(name)) {
-                if (value) {
-                    return v2.each(name, function (key) {
-                        v2.prop(elem, key, value);
-                    });
-                }
-                var map = {};
-                v2.each(name, function (key) {
-                    map[key] = v2.prop(elem, key);
-                });
-                return map;
-            }
-            if (v2.isPlainObject(name)) {
-                return v2.each(name, function (value, key) {
-                    v2.prop(elem, key, value);
-                });
-            }
             name = v2.propFix[name] || name;
             if (value === undefined) {
                 return elem[name];
+            }
+            if (value === null) {
+                return v2.removeProp(elem, name);
             }
             elem[name] = value;
         },
@@ -2261,44 +2370,6 @@
                 return extra === true || v2.isNumber(num) ? num || 0 : val;
             }
             return val;
-        },
-        access: function (elem, fn, key, value, chainable, emptyGet, raw) {
-            var i, bulk = key == null;
-
-            if (v2.type(key) === "object") {
-                chainable = true;
-                for (i in key) {
-                    v2.access(elem, fn, i, key[i], true, emptyGet, raw);
-                }
-            } else if (value !== undefined) {
-                chainable = true;
-
-                if (!v2.isFunction(value)) {
-                    raw = true;
-                }
-
-                if (bulk) {
-                    if (raw) {
-                        fn.call(elem, value);
-                        fn = null;
-                    } else {
-                        bulk = fn;
-                        fn = function (elem, _key, value) {
-                            return bulk.call(elem, value);
-                        };
-                    }
-                }
-
-                if (fn) {
-                    fn(elem, key, raw ? value : value.call(elem, i, fn(elem, key)));
-                }
-            }
-
-            return chainable ?
-                emptyGet :
-                bulk ?
-                    fn.call(elem) :
-                    fn(elem, key);
         }
     });
 
@@ -2332,6 +2403,33 @@
     }
 
     v2.extend({
+        siblings: function (elem, node) {
+            var r = [];
+            for (; elem; elem = elem.nextSibling) {
+                if (elem.nodeType === 1 && elem !== node) {
+                    r.push(elem);
+                }
+            }
+            return r;
+        },
+        sibling: function (elem, dir) {
+            do {
+                elem = elem[dir];
+            } while (elem && elem.nodeType !== 1);
+            return elem;
+        },
+        dir: function (elem, dir) {
+            var r = [],
+                n = elem[dir];
+
+            while (n && n.nodeType !== 9) {
+                if (n.nodeType === 1) {
+                    r.push(n);
+                }
+                n = n[dir];
+            }
+            return r;
+        },
         domManip: function (elem, args, table, callback) {
             var first, fragment;
             fragment = buildFragment(args, elem.ownerDocument, elem);
@@ -2397,25 +2495,23 @@
             }
             return elem;
         },
-        text: function (elem, value) {
-            if (value === undefined) {
-                var r = "",
-                    nodeType = elem.nodeType;
-                if (nodeType === 1 || nodeType === 9 || nodeType === 11) {
-                    if (typeof elem.textContent === "string") {
-                        return elem.textContent;
-                    } else {
-                        for (elem = elem.firstChild; elem; elem = elem.nextSibling) {
-                            r += v2.text(elem);
-                        }
+        text: function (elem) {
+            var r = "",
+                nodeType = elem.nodeType;
+            if (nodeType === 1 || nodeType === 9 || nodeType === 11) {
+                if (typeof elem.textContent === "string") {
+                    return elem.textContent;
+                } else if (typeof elem.innerText === 'string') {
+                    return elem.innerText;
+                } else {
+                    for (elem = elem.firstChild; elem; elem = elem.nextSibling) {
+                        r += v2.text(elem);
                     }
-                } else if (nodeType === 3 || nodeType === 4) {
-                    return elem.nodeValue;
                 }
-                return r;
+            } else if (nodeType === 3 || nodeType === 4) {
+                return elem.nodeValue;
             }
-            v2.empty(elem);
-            elem.appendChild((elem.ownerDocument || document).createTextNode(value));
+            return r;
         }
     });
 
@@ -2424,7 +2520,47 @@
             return v2[name](this.$, arguments), this;
         };
     });
+    function access(vm, fn, key, value, elem, chainable, raw) {
+        elem = elem || vm.$;
 
+        var i = 0, bulk = key == null;
+
+        if (v2.type(key) === "object") {
+            chainable = true;
+            elem = value || vm.$;
+            for (i in key) {
+                access(vm, fn, i, key[i], elem, true, raw);
+            }
+        } else if (value !== undefined) {
+            chainable = true;
+
+            if (!v2.isFunction(value)) {
+                raw = true;
+            }
+
+            if (bulk) {
+                if (raw) {
+                    fn(elem, value);
+                    fn = null;
+                } else {
+                    bulk = fn;
+                    fn = function (elem, _key, value) {
+                        return bulk(elem, value);
+                    };
+                }
+            }
+
+            if (fn) {
+                fn(elem, key, raw ? value : value.call(elem, i, fn(elem, key)));
+            }
+        }
+
+        return chainable ?
+            vm :
+            bulk ?
+                fn(elem) :
+                fn(elem, key);
+    }
     var rclass = /[\t\r\n]/g,
         rcssText = /^([+-/*]=)?([+-]?(?:[0-9]+\.)?[0-9]+)/i;
     v2.use({
@@ -2475,47 +2611,58 @@
         domManip: function (args, table, callback) {
             return v2.domManip(this.$, args, table, callback);
         },
-        '{css': function (name, value) {
-            return v2.access(this.$, function (elem, name, value) {
-                var styles, len,
-                    map = {},
-                    i = 0;
-
+        '{css': function (name, value, elem) {
+            return access(this, function (elem, name, value) {
+                var i = 0, len, map, styles;
                 if (v2.isArray(name)) {
                     styles = getStyles(elem);
                     len = name.length;
-
+                    map = {};
                     for (; i < len; i++) {
                         map[name[i]] = v2.css(elem, name[i], false, styles);
                     }
-
                     return map;
-                }
-
-                if (v2.isPlainObject(name)) {
-                    for (i in name) {
-                        v2.style(elem, i, name[i]);
-                    }
-                    return;
                 }
 
                 return value === undefined ?
                     v2.css(elem, name) :
                     v2.style(elem, name, value);
-            }, name, value, arguments.length > 1, this);
+            }, name, value, elem, arguments.length > 1);
         },
-        '{attr': function (name, value) {
-            return v2.access(this.$, v2.attr, name, value, arguments.length > 1, this);
+        '{attr': function (name, value, elem) {
+            return access(this, function (elem, name, value) {
+                var i = 0, len, map;
+                if (v2.isArray(name)) {
+                    len = name.length;
+                    map = {};
+                    for (; i < len; i++) {
+                        map[name[i]] = v2.attr(elem, name[i]);
+                    }
+                    return map;
+                }
+                return v2.attr(elem, name, value);
+            }, name, value, elem, arguments.length > 1);
         },
-        '{prop': function (name, value) {
-            return v2.access(this.$, v2.prop, name, value, arguments.length > 1, this);
+        '{prop': function (name, value, elem) {
+            return access(this, function (elem, name, value) {
+                var i = 0, len, map;
+                if (v2.isArray(name)) {
+                    len = name.length;
+                    map = {};
+                    for (; i < len; i++) {
+                        map[name[i]] = v2.prop(elem, name[i]);
+                    }
+                    return map;
+                }
+                return v2.prop(elem, name, value);
+            }, name, value, elem, arguments.length > 1);
         }
     });
 
     v2.each("on off".split(' '), function (name) {
         v2.fn[name] = function (type, selector, fn) {
             if (arguments.length < 3) {
-                fn = fn || selector;
+                fn = selector;
                 selector = undefined;
             }
             if (v2.isPlainObject(type)) {
@@ -2536,6 +2683,14 @@
                     } while (control = control.owner);
                 }
                 control = null;
+            }
+            if (type[0] === '$') {
+                type = type.slice(1);
+                fn = fn[this.identity] || (fn[this.identity] = (function (context, callback) {
+                    return function (e) {
+                        return callback.call(context, e);
+                    };
+                })(this, fn));
             }
             return v2[name](this.$, type, fn, selector), this;
         };

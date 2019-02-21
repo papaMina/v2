@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="js\appsettings.js" />
+    <Content Include="js\components\v2.input.js" />
     <Content Include="js\lib\ajax\axios.js" />
     <Content Include="js\lib\ajax\axios.min.js" />
     <Content Include="js\lib\fonts\glyphicons-halflings-regular.svg" />
@@ -72,8 +73,6 @@
     <Content Include="js\views\index.js" />
     <Content Include="js\lib\bootstrap\bootstrap.css" />
     <Content Include="js\lib\bootstrap\bootstrap.min.css" />
-    <Content Include="js\vue.js" />
-    <Content Include="js\vue.min.js" />
     <Content Include="require.js" />
     <Content Include="require.min.js" />
     <Content Include="README.md" />

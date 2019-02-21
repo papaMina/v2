@@ -103,45 +103,52 @@
         /**
          * 获取style属性值
          * @param name style属性名称
+         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        css(name: string): number | string,
+        css(name: string, elem?: Element): number | string,
         /**
          * 获取style属性值
          * @param name style属性名称数组集合
+         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        css(name: Array<string>): PlainObject,
+        css(name: Array<string>, elem?: Element): PlainObject,
         /**
          * 设置style属性值
          * @param name style属性名称和属性值对象
+         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        css(name: PlainObject): V2Control,
+        css(name: PlainObject, elem?: Element): V2Control,
         /**
          * 设置style属性值
          * @param name 属性名称
          * @param value 属性值
+         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        css(name: string, value: any): V2Control,
+        css(name: string, value: any, elem?: Element): V2Control,
         /**
          * 获取属性值
          * @param name 属性名称
+         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        attr(name: string): any,
+        attr(name: string, elem?: Element): any,
         /**
          * 获取属性值
          * @param name 属性名称数组
+         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        attr(name: Array<string>): PlainObject,
+        attr(name: Array<string>, elem?: Element): PlainObject,
         /**
          * 设置属性值
          * @param name 包含属性名称和属性值的对象
+         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        attr(name: PlainObject): V2Control,
+        attr(name: PlainObject, elem?: Element): V2Control,
         /**
          * 设置属性值
          * @param name 属性名称
          * @param value 属性值
          */
-        attr(name: string, value: string): V2Control,
+        attr(name: string, value: string, elem?: Element): V2Control,
         /**
          * 移除属性
          * @param value 属性名称(多个时，用空格分开)
@@ -150,24 +157,28 @@
         /**
          * 获取属性值
          * @param name 属性名称
+         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        prop(name: string): any,
+        prop(name: string, elem?: Element): any,
         /**
          * 获取属性值
          * @param name 属性名称数组
+         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        prop(name: Array<string>): PlainObject,
+        prop(name: Array<string>, elem?: Element): PlainObject,
         /**
          * 设置属性值
          * @param name 包含属性名称和属性值的对象
+         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        prop(name: PlainObject): V2Control,
+        prop(name: PlainObject, elem?: Element): V2Control,
         /**
          * 设置属性值
          * @param name 属性名称
          * @param value 属性值
+         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        prop(name: string, value: string): V2Control,
+        prop(name: string, value: any, elem?: Element): V2Control,
         /**
          * 移除属性
          * @param value 属性名称(多个时，用空格分开)
@@ -222,7 +233,7 @@
          * @param selector 控件作用的子元素选择器
          * @param fn 事件回调函数
          */
-        off(type, selector, fn): V2Control,
+        off(type, selector): V2Control,
         /**
          * 向主元素追加子元素
          * @param args 元素集合
@@ -265,10 +276,12 @@
          * @param options 配置项
          */
         constructor(tag: string, options: V2ControlExtensions): V2ControlExtensions,
-        /** 版本号 */
-        readonly v2: string,
+        /** 【yes】版本号 */
+        readonly yep: string,
         /** tag名称 */
         readonly tag: string,
+        /** 控件身份ID */
+        readonly identity: number,
         /** 类名空间 */
         readonly namespace: string,
         /** 是否准备完成（默认：false） */
@@ -294,7 +307,7 @@
             commit: 8 // 完成提交（绑定事件）
         * }
         */
-        enumState: PlainObject<number>        
+        enumState: PlainObject<number>
     }
     /**通配符  */
     interface WildCard {

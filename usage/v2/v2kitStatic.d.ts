@@ -21,7 +21,7 @@
 
 interface V2kitStatic {
     /** 渲染控件 */
-    (tag: string, options?: Yep.V2ControlExtensions): Yep.V2Control,
+    (tag: string, options?: Yep.V2ControlExtensions): Yep.V2ControlExtensions,
     /** 控件原型 */
     readonly fn: Yep.V2Control,
     /**
@@ -517,6 +517,24 @@ interface V2kitStatic {
     cssNumber: Yep.PlainObject<boolean>,
     /** css 属性 */
     cssProps: Yep.PlainObject<string>,
+    /**
+     * 迭代元素指定属性的所有有效元素。
+     * @param elem 元素
+     * @param dir 属性字符串（如:parentNode）
+     */
+    dir(elem: Element, dir: string): Array<Element>,
+    /**
+     * 迭代元素指定属性的第一个有效元素。
+     * @param elem 元素
+     * @param dir 属性字符串（如：nextSibling、previousSibling）
+     */
+    sibling(elem: Element, dir: string): Element,
+    /**
+     * 获取元素之后的所有有效兄弟节点（可以指定排除某个元素）。
+     * @param elem 元素。
+     * @param node 排除的元素。
+     */
+    siblings(elem: Element, node?: Element): Array<Element>,
     /**
      * item 是不是 main 的子孙节点
      * @param main 主元素

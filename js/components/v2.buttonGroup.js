@@ -16,19 +16,26 @@
             this.vertical = false;
         },
         init: function () {
-            this.base.init('div');
+            this.base.init();
         },
         render: function () {
             this.base.render();
             this.addClass(this.vertical ? 'btn-group-vertical' : 'btn-group');
             if (this.lg || this.sm || this.xs) {
-                this.addClass(this.lg ? 'btn-lg' : this.sm ? 'btn-sm' : 'btn-xs');
+                this.addClass(this.lg ? 'btn-group-lg' : this.sm ? 'btn-group-sm' : 'btn-group-xs');
             }
         },
         resolve: function (data) {
             v2.each(data.buttons, function (options) {
                 return this.constructor('button', options);
             }, this);
+            var elem = this.take('> ul:last-child');
+            if (elem && (elem = v2.sibling(elem, 'previousSibling'))) {
+                this.css({
+                    'border-top-right-radius': '0.25em',
+                    'border-bottom-right-radius': '0.25em'
+                }, elem);
+            }
         }
     });
     return function (options) {
