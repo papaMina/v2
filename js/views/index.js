@@ -140,7 +140,6 @@ define(function (require) {
             }
         }
     });
-
     console.log(v);
     console.log(+new Date() - timestamp);
     //var x = require('components/yep-button');

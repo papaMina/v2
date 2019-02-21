@@ -37,6 +37,7 @@
         };
 
     var class2type = {},
+        coreCards = {},
         core_toString = class2type.toString,
         core_hasOwn = class2type.hasOwnProperty;
     var core_arr = [],
@@ -257,13 +258,7 @@
             }), obj;
         }
         var value = obj[name], callback = (value || value === 0 || value === false) && ('set' in attributes || !attributes.writable && !('get' in attributes)) && function () {
-            try {
-                obj[name] = value;
-            } catch (_) {
-                console.log(obj);
-                console.log(name);
-                console.log(value);
-            }
+            obj[name] = value;
         };
         v2.delete(obj, name);
         try {
@@ -294,14 +289,14 @@
     function initWildCards(wildCards, key, type, value) {
         if (!wildCards || !key) return key;
         var item, arr;
-        while (item = v2.wildCards[key[0]]) {
+        while (item = coreCards[key[0]]) {
             key = key.slice(1);
             if (item.type === "*" || typeCache(type = type || v2.type(value))(item.type)) {
                 arr = arr || [];
-                arr.push(type === item.type ?
-                    item :
-                    v2.improve({ type: type }, item)
-                );
+                arr.push({
+                    type: type,
+                    exec: item.exec
+                });
             }
         }
         if (arr) {
@@ -1020,38 +1015,36 @@
         class2type["[object " + item + "]"] = item.toLowerCase();
     });
 
-    v2.extend({
-        wildCards: {
-            "&": { //true
-                type: "function",
-                exec: function (control, value, key) {
-                    if (value) {
-                        control[key](value);
-                    }
+    v2.extend(coreCards, {
+        "&": { //true
+            type: "function",
+            exec: function (control, value, key) {
+                if (value) {
+                    control[key](value);
                 }
-            },
-            "!": { //false
-                type: "function",
-                exec: function (control, value, key) {
-                    if (!value) {
-                        control[key](value);
-                    }
+            }
+        },
+        "!": { //false
+            type: "function",
+            exec: function (control, value, key) {
+                if (!value) {
+                    control[key](value);
                 }
-            },
-            '{': { // object
-                type: 'function',
-                exec: function (control, value, key) {
-                    if (v2.isPlainObject(value)) {
-                        control[key](value);
-                    }
+            }
+        },
+        '{': { // object
+            type: 'function',
+            exec: function (control, value, key) {
+                if (v2.isPlainObject(value)) {
+                    control[key](value);
                 }
-            },
-            '.': { // any
-                type: 'function',
-                exec: function (control, value, key) {
-                    if (value != null) {
-                        control[key](value);
-                    }
+            }
+        },
+        '.': { // any
+            type: 'function',
+            exec: function (control, value, key) {
+                if (value != null) {
+                    control[key](value);
                 }
             }
         }
@@ -1067,7 +1060,7 @@
         '/': 'regexp',
         ':': 'function'
     }, function (type, name) {
-        v2.wildCards[name] = {
+        coreCards[name] = {
             type: 'function',
             exec: function (control, value, key) {
                 if (v2.type(value) === type) {
@@ -1076,6 +1069,7 @@
             }
         };
     });
+
     v2.extend({
         makeMap: makeMap,
         makeCache: makeCache,
@@ -1100,6 +1094,43 @@
     }, function (results, value) {
         results.unshift(value);
     });
+    function mergeCards(card, card2) {
+        var val, type, type_check, doubleAsterisk = card.type === '*' && card2.type === '*';
+        return {
+            type: (doubleAsterisk || card.type === '*' || card2.type === '*') ? '*' : card.type + '|' + card2.type,
+            exec: doubleAsterisk ?
+                function (control, value, key) {
+                    val = card.exec(control, value, key);
+                    if (val !== undefined) {
+                        if (v2.isFunction(control[key])) {
+                            value = control.variable[key] = val;
+                        } else {
+                            value = control[key] = val;
+                        }
+                    }
+                    return card2.exec(control, value, key);
+                } :
+                function (control, value, key) {
+                    val = undefined;
+                    type = v2.type(value);
+                    type_check = typeCache(type);
+
+                    if (type_check(card.type)) {
+                        val = card.exec(control, value, key);
+                    }
+                    if (!type_check(card2.type)) return val;
+
+                    if (val !== undefined) {
+                        if (v2.isFunction(control[key])) {
+                            value = control.variable[key] = val;
+                        } else {
+                            value = control[key] = val;
+                        }
+                    }
+                    return card2.exec(control, value, key);
+                }
+        };
+    }
     v2.extend({
         use: function (tag, option) {
             if (v2.isString(tag)) return use(tag, option);
@@ -1117,6 +1148,20 @@
                 }
                 fn[initWildCards(wildCards, key, null, value)] = value;
             });
+        },
+        useCards: function (letter, value) {
+            if (v2.isPlainObject(letter)) {
+                return v2.each(letter, function (value, letter) {
+                    return v2.useCards(letter, value);
+                });
+            }
+            if (v2.isFunction(value)) {
+                value = { type: '*', exec: value };
+            }
+            if (letter in coreCards) {
+                return coreCards[letter] = mergeCards(coreCards[letter], value);
+            }
+            return coreCards[letter] = value;
         },
         typeCb: function (typeCb, type, callback) {
             if (!type || !typeCb || !callback || !(type = type >>> 0)) return;
@@ -1237,7 +1282,9 @@
     if (typeof define === "function") {
         define("v2", [], function () { return v2; });
     }
-
+    setTimeout(function () {
+        console.log(coreCards);
+    }, 1000);
     window.v2kit = window.v2 = v2;
 });
 /*!
@@ -2836,12 +2883,10 @@
     });
     v2.htmlSerialize = htmlSerialize;
 
-    v2.extend(v2.wildCards, {
-        "#": { // html
-            type: "string",
-            exec: function (_control, value) {
-                if (v2.isString(value)) return v2.htmlSerialize(value);
-            }
+    v2.useCards('#', {
+        type: "string",
+        exec: function (_control, value) {
+            if (v2.isString(value)) return v2.htmlSerialize(value);
         }
     });
 }));

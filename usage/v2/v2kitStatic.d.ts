@@ -31,6 +31,32 @@ interface V2kitStatic {
      */
     type(object: any): typeof object;
     /**
+     * 删除对象属性
+     * @param object 对象
+     * @param names 属性名称（多个名称时用空格分开）
+     */
+    delete(object: any, names: string): any,
+    /**
+     * 为对象定义属性
+     * @param object 对象
+     * @param value 属性集合
+     */
+    define(object: any, value: Yep.PlainObject): any,
+    /**
+     * 为对象定义属性
+     * @param object 对象
+     * @param name 属性名称
+     * @param attributes 属性描述
+     */
+    define(object: any, name: string, attributes: Yep.PlainObject): any,
+    /**
+     * 定义只读对象属性（一经定义，属性值将不会再被改变）
+     * @param object 对象
+     * @param name 属性名称
+     * @param value 属性值
+     */
+    defineReadonly(object: any, name: any, value: any): any,
+    /**
     * 对象拓展(与extend的效果一样)
     * @param array 需要继承的对象集合。
     * @returns 返回数组中的第一个非{Boolean}型对象。
@@ -204,49 +230,41 @@ interface V2kitStatic {
      * @param array 需要遍历的数组。
      * @param callback 回调函数。
      */
-    each<T>(array: ArrayLike<T>, callback: (this: T, elementOfArray: T, indexInArray: number) => any): T;
+    each<T>(array: ArrayLike<T>, callback: (this: T, value: T, index: number) => any): T;
     /**
      * 数组遍历
      * @param array 回调函数。
      * @param callback 回调函数。
      * @param context 回调函数的上下文对象。
      */
-    each<T>(array: ArrayLike<T>, callback: (elementOfArray: T, indexInArray: number) => any, context: any): T;
+    each<T>(array: ArrayLike<T>, callback: (value: T, index: number) => any, context: any): T;
     /**
      * 对象遍历
      * @param object 需要遍历的对象。
      * @param callback 回调函数。
      */
-    each<T, K extends keyof T>(object: T, callback: (this: T[K], valueOfProperty: T[K], propertyName: K, object) => any): T;
+    each<T, K extends keyof T>(object: T, callback: (this: T[K], value: T[K], propertyName: K, object) => any): T;
     /**
      * 对象遍历
      * @param object 需要遍历的对象。
      * @param callback 回调函数。
      * @param context 回调函数的上下文对象。
      */
-    each<T, K extends keyof T>(object: T, callback: (valueOfProperty: T[K], propertyName: K, object) => any, context: any): T;
+    each<T, K extends keyof T>(object: T, callback: (value: T[K], propertyName: K, object) => any, context: any): T;
     /**
      * 数组映射。
      * @param array 需要映射的数组。
      * @param callback 回调函数。
      * @returns 映射结果数组。
      */
-    map<T, TReturn>(array: ArrayLike<T>, callback: (this: T, elementOfArray: T, indexInArray: number) => TReturn | null | undefined): TReturn[];
+    map<T, TReturn>(array: ArrayLike<T>, callback: (this: T, value: T, index: number) => TReturn | null | undefined): TReturn[];
     /**
      * 数组映射。
      * @param array 需要映射的数组。
      * @param callback 回调函数。
      * @returns 映射结果数组。
      */
-    map<T, TReturn>(array: ArrayLike<T>, callback: (this: T, elementOfArray: T, indexInArray: number) => TReturn[] | null | undefined): TReturn[][];
-    /**
-     * 数组映射。
-     * @param array 需要映射的数组。
-     * @param callback 回调函数。
-     * @param context 回调函数的上下文对象。
-     * @returns 映射结果数组。
-     */
-    map<T, TReturn>(array: ArrayLike<T>, callback: (elementOfArray: T, indexInArray: number) => TReturn | null | undefined, context: any): TReturn[];
+    map<T, TReturn>(array: ArrayLike<T>, callback: (this: T, value: T, index: number) => TReturn[] | null | undefined): TReturn[][];
     /**
      * 数组映射。
      * @param array 需要映射的数组。
@@ -254,21 +272,29 @@ interface V2kitStatic {
      * @param context 回调函数的上下文对象。
      * @returns 映射结果数组。
      */
-    map<T, TReturn>(array: ArrayLike<T>, callback: (elementOfArray: T, indexInArray: number) => TReturn[] | null | undefined, context: any): TReturn[][];
+    map<T, TReturn>(array: ArrayLike<T>, callback: (value: T, index: number) => TReturn | null | undefined, context: any): TReturn[];
+    /**
+     * 数组映射。
+     * @param array 需要映射的数组。
+     * @param callback 回调函数。
+     * @param context 回调函数的上下文对象。
+     * @returns 映射结果数组。
+     */
+    map<T, TReturn>(array: ArrayLike<T>, callback: (value: T, index: number) => TReturn[] | null | undefined, context: any): TReturn[][];
     /**
     * 对象映射。
     * @param array 需要映射的数组。
     * @param callback 回调函数。
     * @returns 映射结果数组。
     */
-    map<T, TReturn, K extends keyof T>(object: T, callback: (this: T[K], valueOfProperty: T[K], propertyName: K) => TReturn | null | undefined): TReturn[];
+    map<T, TReturn, K extends keyof T>(object: T, callback: (this: T[K], value: T[K], propertyName: K) => TReturn | null | undefined): TReturn[];
     /**
     * 对象映射。
     * @param array 需要映射的数组。
     * @param callback 回调函数。
     * @returns 映射结果数组。
     */
-    map<T, TReturn, K extends keyof T>(object: T, callback: (this: T[K], valueOfProperty: T, propertyName: K) => TReturn[] | null | undefined): TReturn[][];
+    map<T, TReturn, K extends keyof T>(object: T, callback: (this: T[K], value: T, propertyName: K) => TReturn[] | null | undefined): TReturn[][];
     /**
     * 对象映射。
     * @param array 需要映射的数组。
@@ -276,7 +302,7 @@ interface V2kitStatic {
     * @param context 回调函数的上下文对象。
     * @returns 映射结果数组。
     */
-    map<T, TReturn, K extends keyof T>(object: T, callback: (valueOfProperty: T, propertyName: K) => TReturn | null | undefined, context: any): TReturn[];
+    map<T, TReturn, K extends keyof T>(object: T, callback: (value: T, propertyName: K) => TReturn | null | undefined, context: any): TReturn[];
     /**
     * 对象映射。
     * @param array 需要映射的数组。
@@ -284,14 +310,14 @@ interface V2kitStatic {
     * @param context 回调函数的上下文对象。
     * @returns 映射结果数组。
     */
-    map<T, TReturn, K extends keyof T>(object: T, callback: (valueOfProperty: T, propertyName: K) => TReturn[] | null | undefined, context: any): TReturn[][];
+    map<T, TReturn, K extends keyof T>(object: T, callback: (value: T, propertyName: K) => TReturn[] | null | undefined, context: any): TReturn[][];
     /**
      * 判断数组中是否有元素满足回调函数逻辑。
      * @param array 数组。
      * @param callback 回调函数。
      * @returns 数组中任意一个元素使得回调函数返回 true 时，方法返回 true，否则 false。
      */
-    any<T>(array: ArrayLike<T>, callback: (this: T, elementOfArray: T, indexInArray: number) => boolean): boolean;
+    any<T>(array: ArrayLike<T>, callback: (this: T, value: T, index: number) => boolean): boolean;
     /**
      * 判断数组中是否有元素满足回调函数逻辑。
      * @param array 数组。
@@ -299,14 +325,14 @@ interface V2kitStatic {
      * @param context 回调函数上下文。
      * @returns 数组中任意一个元素使得回调函数返回 true 时，方法返回 true，否则 false。
      */
-    any<T>(array: ArrayLike<T>, callback: (elementOfArray: T, indexInArray: number) => boolean, context: any): boolean;
+    any<T>(array: ArrayLike<T>, callback: (value: T, index: number) => boolean, context: any): boolean;
     /**
      * 判断对象中是否有元素满足回调函数逻辑。
      * @param object 对象。
      * @param callback 回调函数。
      * @returns 数组中任意一个元素使得回调函数返回 true 时，方法返回 true，否则 false。
      */
-    any<T, K extends keyof T>(object: T, callback: (this: T[K], valueOfProperty: T[K], propertyName: K) => boolean): boolean;
+    any<T, K extends keyof T>(object: T, callback: (this: T[K], value: T[K], propertyName: K) => boolean): boolean;
     /**
      * 判断对象中是否有元素满足回调函数逻辑。
      * @param object 对象。
@@ -314,7 +340,7 @@ interface V2kitStatic {
      * @param context 回调函数上下文。
      * @returns 数组中任意一个元素使得回调函数返回 true 时，方法返回 true，否则 false。
      */
-    any<T, K extends keyof T>(object: T, callback: (valueOfProperty: T[K], propertyName: K) => boolean, context: any): boolean;
+    any<T, K extends keyof T>(object: T, callback: (value: T[K], propertyName: K) => boolean, context: any): boolean;
     /**
      * 异常。
      * @param message 异常信息。
@@ -481,6 +507,17 @@ interface V2kitStatic {
      * @param option 需要设置的对象。
      */
     use(tag: string, option: Yep.V2ControlExtensions): any;
+    /**
+     * 自定义通配符
+     * @param wildCards
+     */
+    useCards(wildCards: Yep.PlainObject<Yep.WildCard>): Yep.PlainObject<Yep.WildCard>,
+    /**
+     * 自定义通配符
+     * @param letter 符号
+     * @param wildCard 配置项
+     */
+    useCards(letter: string, wildCard: Yep.WildCard): Yep.WildCard,
     /**
      * 类型集水池
      * @param typeCb 集水池。

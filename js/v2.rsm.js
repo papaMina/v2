@@ -477,7 +477,7 @@
         compile: 2,
         map: 1
     };
-    v2.extend(v2.wildCards, {
+    v2.useCards({
         "^": { // eval
             type: "string",
             exec: function (control, value) {

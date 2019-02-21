@@ -266,7 +266,44 @@
          * 释放插件。
          * @param deep 是否深度释放插件。深度释放时，插件内属性以及属性对象包含的属性都会被释放。
          */
-        destroy(deep?: boolean): any
+        destroy(deep?: boolean): any,
+        /**
+         * 定义属性
+         * @param names 多个名称用空格分开。
+         */
+        define(names: string): V2Control,
+        /**
+         * 定义多个属性
+         * @param value 属性对象
+         */
+        define(value: PlainObject): V2Control,
+        /**
+         * 定义属性
+         * @param names 多个名称用空格分开。
+         * @param userDefined 是否为用户自定义的属性。
+         */
+        define(names: string, userDefined: boolean): V2Control,
+        /**
+         * 定义属性
+         * @param name 属性名称
+         * @param attributes 属性描述
+         */
+        define(name: string, attributes: PlainObject): V2Control,
+        /**
+         * 定义属性（通过attributeSet方法设置值）
+         * @param name 属性名称。
+         * @param attributeSet 设置属性值的方法。
+         */
+        define(name: string, attributeSet: (value: any) => any): V2Control,
+        /**
+         * 定义属性（通过attributeSet方法设置值）
+         * @param name 属性名称。
+         * @param attributeSet 设置属性值的方法。
+         * @param userDefined 是否为用户自定义的属性。
+         */
+        define(name: string, attributeSet: (value: any) => any, userDefined: boolean): V2Control,
+        /** 子节点的数组 */
+        children(): ArrayThen
     }
     /** 控件 */
     interface V2Control extends V2ControlBase {
@@ -319,7 +356,7 @@
          * @param value 满足当前控制器的属性值（type为“function”时，返回控件的key属性值，否则返回控件“入参变量”的key属性值）。
          * @param key 满足当前控制器的属性名称。
          */
-        exec(control: V2Control, value: any, key: any): any;
+        exec(control: V2Control, value: any, key: string): any;
     }
     /** 通配符集合 */
     interface WildCards {
@@ -332,6 +369,34 @@
     /** 插件对象 */
     interface V2ControlExtensions extends V2Control {
         [key: string]: any;
+    }
+    /** then 数组 */
+    interface ArrayThen<T = Element> extends Array<T> {
+        /**
+         * 过滤数组
+         * @param callback 返回true，则当前迭代元素加入数组。
+         */
+        when(callback: (value: T, index: number, array: ArrayThen<T>) => boolean): ArrayThen<T>,
+        /**
+         * 遍历数组
+         * @param callback 分别执行当前数组中的元素。
+         */
+        then(callback: (value: T, index: number, array: ArrayThen<T>) => any): ArrayThen<T>,
+        /**
+         * 返回只包含第i个元素的数组对象。
+         * @param i
+         */
+        eq(i: number): ArrayThen<T>,
+        /**
+         * 返回只包含第i个元素的数组对象。
+         * @param i
+         */
+        nth(i: number): ArrayThen<T>,
+        /**
+         * 遍历数组(并释放数组)
+         * @param callback 分别执行当前数组中的元素。
+         */
+        done(callback: (value: T, index: number, array: ArrayThen<T>) => any): ArrayThen<T>
     }
 }
 
