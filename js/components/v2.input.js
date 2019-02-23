@@ -1,4 +1,4 @@
-﻿define(function (require) {
+﻿define(function (_require) {
     var matchExpr = {
         number: /^[+-]?(0|[1-9][0-9]*)(?:\.([0-9]+))?$/,
         tel: /^(0[0-9]{2,3}-?)?(\+86\s+)?((1[3-9][0-9]{3}|[2-9])[0-9]{6,7})+(-[0-9]{1,4})?$/,
@@ -94,29 +94,28 @@
                     return v2.format("值必须小于或等于{0}个字符。", control.maxlength);
                 }
             },
-            Massage: function (massage) {
-                massage = massage || control.validity.validError();
-                if (massage) {
-                    var my = this;
-                    if (!this.isReady) {
-                        this.$ = this.$ || control.$.prepend('<div class="input-validity"><div class="validity-status">!</div><span class="validity-massage"></span></div>').children().eq(0);
-                    }
-                    this.$.find(".validity-massage").text(massage);
-                    this.$.removeClass("hidden");
-                    if (timer) clearTimeout(timer);
-                    timer = setTimeout(function () {
-                        my.$.addClass("hidden");
-                        timer = null;
-                    }, 3000);
+            reportValidity: function () {
+                if (control.checkValidity()) return true;
+                var massage = this.validError();
+                if (!this.isReady) {
+                    var node = control.prepend('<div class="input-validity"><div class="validity-status">!</div><span class="validity-massage"></span></div>').first();
+                    v2.on(document, function (e) {
+                        var elem = e.target || e.srcElement;
+                        if (v2.contains(control.$, elem) && v2.nodeName(elem, 'input')) {
+                            v2.addClass(node, 'hidden');
+                        }
+                    });
                     this.isReady = true;
+                    this.$ = node;
                 }
-            },
-            hide: function () {
-                if (this.isReady) {
-                    if (timer) clearTimeout(timer);
-                    this.$.addClass("hidden");
-                    timer = null;
-                }
+                //this.$.find(".validity-massage").text(massage);
+                //this.$.removeClass("hidden");
+                //if (timer) clearTimeout(timer);
+                //timer = setTimeout(function () {
+                //    my.$.addClass("hidden");
+                //    timer = null;
+                //}, 3000);
+                return false;
             }
         };
         return new ValidityStateError();
@@ -129,13 +128,21 @@
             /** 最大值 */
             this.max = Infinity;
             /** 最小长度 */
-            this.minlength = -1;
+            this.minlength = -Infinity;
             /** 最大长度 */
             this.maxlength = Infinity;
+            /** 是否必填 */
+            this.required = false;
+            /** 只读 */
+            this.readonly = false;
+            /** 正则验证 */
+            this.pattern = '';
 
             /** 多行（textarea|input） */
             this.multiple = false;
 
+            /** 标题 */
+            this.title = '';
             /** 名称 */
             this.name = "";
             /** 按钮类型 */
@@ -150,47 +157,80 @@
             this.lg = false;
             /** 默认提示 */
             this.placeholder = '';
-            /** 是否必填 */
-            this.required = false;
-            /** 只读 */
-            this.readonly = false;
-            /** 正则验证 */
-            this.pattern = '';
             /** 验证实体 */
             this.validity = null;
             /** 验证错误 */
             this.validityError = null;
         },
         init: function () {
-            this.base.init(this.multiple ? 'textarea' : 'input');
+            this.base.init(this.type === 'radio' || this.type === 'checkbox' ? 'label' : this.multiple ? 'textarea' : 'input');
         },
         checkValidity: function () {
-            return this.validitySurppot ? this.$.checkValidity() : this.validity.isValid();
+            return this.validitySurpport ? this.$core.checkValidity() : this.validity.isValid();
+        },
+        reportValidity: function () {
+            if (this.reportSurpport) {
+                return this.$core.reportValidity();
+            }
+            this.validityError = this.validityError || inputValidityError(this);
+            return this.validityError.reportValidity();
         },
         setCustomValidity: function (massage) {
-            if (this.validitySurppot) {
-                this.$.setCustomValidity(message);
+            if (this.validitySurpport) {
+                this.$core.setCustomValidity(message);
             } else if (this.validity.customError = !!massage && v2.isString(massage)) {
                 this.ValidityError = massage;
             }
         },
-        render: function () {
+        render: function (variable) {
             this.base.render();
-            this.addClass('form-control');
-            if (this.lg || this.sm || this.xs) {
-                this.addClass(this.lg ? 'input-lg' : this.sm ? 'input-sm' : 'input-xs');
+            switch (this.type) {
+                case 'button':
+                case 'reset':
+                case 'submit':
+                    this.addClass('btn');
+                    if (!variable.addClass) {
+                        this.addClass(this.type === 'submit' ? 'btn-primary' : this.type === 'reset' ? 'btn-warning' : 'btn-default');
+                    }
+                    if (this.lg || this.sm || this.xs) {
+                        this.addClass(this.lg ? 'btn-lg' : this.sm ? 'btn-sm' : 'btn-xs');
+                    }
+                    break;
+                case 'radio':
+                case 'checkbox':
+                    this.addClass(this.type);
+                    this.$massage = this.append(v2.htmlSerialize('input[type="{type}"]+span'.withCb(this))).last();
+                    this.$core = this.$massage.previousSibling;
+                    break;
+                default:
+                    this.addClass('form-control');
+                    if (this.lg || this.sm || this.xs) {
+                        this.addClass(this.lg ? 'input-lg' : this.sm ? 'input-sm' : 'input-xs');
+                    }
+                    break;
             }
+
             this.attr('type', this.type || 'text');
 
-            var validity = this.$.validity;
-            this.validitySurppot = !!validity;
+            var node = this.$core || this.$;
+
+            var validity = node.validity;
+
+            this.validitySurpport = !!validity;
+            this.reportSurpport = v2.isFunction(node.reportValidity);
+
             this.validity = validity || this.validity || inputValidity(this);
-            this.validityError = this.validityError || inputValidityError(this);
+
+            this.$core = node;
         },
         usb: function () {
             this.base.usb();
-            this.define('value pattern required min max minlength maxlength placeholder validationMessage')
+            this.define('pattern min max minlength maxlength placeholder validationMessage')
+                .define('type', true)
                 .define({
+                    value: function (value) {
+                        this.invoke('input-change', value);
+                    },
                     required: function (value) {
                         this.toggleClass('required', !!value);
                     },
@@ -198,97 +238,52 @@
                         this.toggleClass('readonly', !!value);
                     }
                 });
+            if (this.type === 'radio' || this.type === 'checkbox') {
+                var defaultChecked = false;
+                this.define('checked', function (checked) {
+                    if (defaultChecked === !checked) {
+                        this.toggleClass('checked', checked = !!checked);
+                        this.invoke('checked-change', defaultChecked = checked);
+                    }
+                }).define('text', function (text) {
+                    v2.empty(this.$massage);
+                    this.$massage.appendChild(document.createTextNode(text));
+                }, true);
+            }
         },
         commit: function () {
-            var my = this;
             this.base.commit();
-            if (this.validitySurppot) {
-                this.on("keyup", function (e) {
+            if (this.type === 'radio' || this.type === 'checkbox') {
+                return this.on('$click', function (e) {
+                    if (this.type === 'checkbox') {
+                        this.checked = !this.checked;
+                    } else {
+                        this.checked = true;
+                    }
+                    return false;
+                });
+            }
+
+            var isChinese,
+                my = this,
+                value = my.value,
+                fixCallbackChange = function () {
+                    if (isChinese || value === this.value) return;
+                    return my.invoke('input-change', value = this.value);
+                };
+            this.on("compositionstart", function () {
+                isChinese = true;
+            }).on("compositionend", function () {
+                isChinese = false;
+            });
+            this.on("input propertychange", fixCallbackChange)
+                .on("keyup", function (e) {
                     var code = e.keyCode || e.which;
                     if (code === 13 || code === 108) {
                         my.invoke("keyboard-enter");
                     }
+                    fixCallbackChange.call(this);
                 });
-                return;
-            }
-            this.$.on("keydown", function (e) {
-                var value = this.value;
-                var code = e.keyCode || e.which;
-                if (value.length === my.maxlength && !(code === 8 || code === 46)) {
-                    return false;
-                }
-                if (my.type === "number") {
-                    value = v2.trim(value);
-                    if (code === 107 || code === 109 || code === 187 || code === 189) {
-                        value = value.replace(/[+-]+/g, "");
-                        if (code === 109 || code === 189) {
-                            value = "-" + value;
-                        }
-                        if (this.value !== value) my.val(value);
-                        return false;
-                    }
-                    if (code === 102) {
-                        value = value && (value.replace(rdot, "") + ".");
-                        if (this.value !== value) my.val(value);
-                        return false;
-                    }
-                    if (code >= 48 && code <= 57 || code >= 96 && code <= 105) {
-                        my.val(value += Math.max(code - 48, code - 96));
-                        return false;
-                    }
-                }
-            });
-            var isChinese = false;
-            this.$input.on("compositionstart", function () {
-                isChinese = true;
-            });
-            this.$input.on("compositionend", function () {
-                isChinese = false;
-            });
-            var valueChangeTimer, isValidCallback = function () {
-                var value = my.value = this.value;
-                if (my.checkValidity()) {
-                    if (my.validityError) {
-                        my.validityError.hide();
-                    }
-                } else {
-                    if (my.validityError) {
-                        my.validityError.Massage();
-                    }
-                }
-                if (value !== my.value) this.value = my.value;
-            }, valueChangeCallback = function (elem) {
-                var value = elem.value;
-                if (my.type === "number") {
-                    value = value.replace(/[^-+.0-9]/g, "");
-                }
-                if (isChinese || my.value === value) return;
-                var value = my.val(elem.value);
-                if (my.timelyValid) {
-                    isValidCallback.call(elem, value);
-                }
-                if (my.value !== value) my.val(my.value);
-            }, valueChangeProxyCallback = function (elem) {
-                if (v2.bro.isMsie || v2.bro.isChrome || v2.isFirefox && v2.isFirefox >= 9) {
-                    return valueChangeCallback(elem);
-                }
-                if (valueChangeTimer) clearTimeout(valueChangeTimer);
-                valueChangeTimer = setTimeout(function () {
-                    valueChangeTimer = null;
-                    valueChangeCallback(elem);
-                }, 50);
-            };
-            this.$input.on("keyup", function (e) {
-                var code = e.keyCode || e.which;
-                if (code === 13 || code === 108) {
-                    my.invoke("keyboard-enter");
-                }
-                valueChangeProxyCallback(this);
-            });
-            this.$input.on("input propertychange", function () {
-                valueChangeProxyCallback(this);
-            });
-            this.$input.on("blur", isValidCallback);
         }
     });
     return function (options) {

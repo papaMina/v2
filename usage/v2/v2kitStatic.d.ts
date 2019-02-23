@@ -558,20 +558,22 @@ interface V2kitStatic {
      * 迭代元素指定属性的所有有效元素。
      * @param elem 元素
      * @param dir 属性字符串（如:parentNode）
+     * @param contains 是否包含入参元素。
      */
-    dir(elem: Element, dir: string): Array<Element>,
+    dir(elem: Element, dir: string, contains?: boolean): Array<Element>,
     /**
      * 迭代元素指定属性的第一个有效元素。
      * @param elem 元素
      * @param dir 属性字符串（如：nextSibling、previousSibling）
+     * @param contains 是否包含入参元素。
      */
-    sibling(elem: Element, dir: string): Element,
+    sibling(elem: Element, dir: string, contains?: boolean): Element,
     /**
      * 获取元素之后的所有有效兄弟节点（可以指定排除某个元素）。
      * @param elem 元素。
-     * @param node 排除的元素。
+     * @param exclude 是否排除入参元素。
      */
-    siblings(elem: Element, node?: Element): Array<Element>,
+    siblings(elem: Element, exclude?: boolean): Array<Element>,
     /**
      * item 是不是 main 的子孙节点
      * @param main 主元素

@@ -116,13 +116,8 @@
 
     function destroyObject(object, deep) {
         if (!object) return null;
-        var elem;
-        if (object.yep === version) {
-            if ((elem = object.$) && elem.jquery) {
-                elem = elem.get(0);
-            }
-        }
-        var i, value;
+
+        var i, elem, value;
         for (i in object) {
             value = object[i];
             if (value && deep && value !== object) {
@@ -140,9 +135,9 @@
                     destroyObject(value, deep);
                 }
             }
-            value = null;
+            v2.deleteCb(object, i);
         }
-        return object = null;
+        return object = value = null;
     }
 
     function v2(tag, option) {
@@ -219,7 +214,7 @@
         };
     };
     var deleteSurport = true;
-    v2.delete = function (obj, value) {
+    v2.deleteCb = function (obj, value) {
         if (!obj || !value) return;
         var i = 0, name;
         value = value.match(rnotwhite);
@@ -255,20 +250,29 @@
         if (v2.isPlainObject(name)) {
             return v2.each(name, function (attributes, name) {
                 return v2.define(obj, name, attributes);
+            });
+        }
+        var value = obj[name];
+        v2.deleteCb(obj, name);
+        if (attributes === true) {
+            return Object.defineProperty(obj, name, {
+                get: function () {
+                    return value;
+                }
             }), obj;
         }
-        var value = obj[name], callback = (value || value === 0 || value === false) && ('set' in attributes || !attributes.writable && !('get' in attributes)) && function () {
-            obj[name] = value;
-        };
-        v2.delete(obj, name);
         try {
             Object.defineProperty(obj, name, attributes);
         } catch (_) {
             if (!('value' in attributes || 'writable' in attributes || 'configurable' in attributes || 'enumerable' in attributes)) throw _;
             defineFix(obj, name, attributes);
         };
-        if (callback) callback();
-        value = callback = null;
+        if ((value || value === 0 || value === false) &&
+            !(value === Infinity || value === -Infinity) &&
+            ('set' in attributes || !attributes.writable && !('get' in attributes))) {
+            obj[name] = value;
+        }
+        value = null;
         return obj;
     };
 
@@ -286,6 +290,7 @@
             return pattern.test(type);
         };
     });
+
     function initWildCards(wildCards, key, type, value) {
         if (!wildCards || !key) return key;
         var item, arr;
@@ -301,18 +306,22 @@
         }
         if (arr) {
             wildCards[key.indexOf('set') === 0 && key.length > 4 ? key[3].toLowerCase() + key.slice(4) : key] = arr.length > 1 ? arr : arr[0];
+        } else if (type !== 'function') {
+            v2.deleteCb(wildCards, key);
         }
         return key;
     }
+
     function typeWildCard(wildCards, type, callback) {
         var isFunction = v2.isFunction(type);
         v2.each(wildCards, function (value, key) {
-            if (isFunction ? type(value.type) : value.type === type) {
+            if (value && (isFunction ? type(value.type) : value.type === type)) {
                 callback(value, key);
             }
         });
     }
-    function renderWildCard(context, variable) {
+
+    function renderWildCard(context, type, variable) {
         var val, callback = function (value, key) {
             val = value.exec(context, value.type === "function" ? variable[key] : context[key], key);
             if (val !== undefined) {
@@ -332,17 +341,22 @@
                 return callback(value, key);
             }
         };
-        typeWildCard(context.wildCards, function (type) {
-            return type !== 'function';
-        }, fix);
-
-        typeWildCard(context.wildCards, 'function', fix);
+        typeWildCard(context.wildCards, type, fix);
     }
+
     var whitespace = "[\\x20\\t\\r\\n\\f]",
-        word = "[_a-z][_a-z0-9]*";
+        word = "[_a-z][_a-z0-9]*",
+        characterEncoding = "(?:\\\\.|[\\w-]|[^\\x00-\\xa0])+",
+        identifier = characterEncoding.replace("w", "w#"),
+        operators = "([*^$|!~]?=)",
+        attribute = "(" + characterEncoding + ")" + whitespace + "*(?:=" + whitespace + "*(?:(['\"])((?:\\\\.|[^\\\\])*?)\\2|(" + identifier + ")|)|)",
+        template = '^<(\\w+)' + whitespace + '*((' + whitespace + '+' + attribute.replace('\\2', '\\5') + ')+)?' + whitespace + '*\\/?>((.*)?<\\/\\1>|)$',
+        rattr = new RegExp('^' + whitespace + '+' + attribute),
+        rtemplate = new RegExp(template);
     var rword = new RegExp(word, "gi"),
-        rxhtmlTag = /^<([\w-]+)|<\/([\w-]+)>$/g,
+        rstandardTag = /^<([\w-]+)|<\/([\w-]+)>$/g,
         rinject = new RegExp("^" + whitespace + "*(" + word + ")\\(((" + whitespace + "*" + word + whitespace + "*,)*" + whitespace + "*" + word + ")?" + whitespace + "*\\)" + whitespace + "*$", "i");
+
     function dependencyInjection(context, key, inject, value) {
         if (!inject) return value;
         var callback, baseArgs, args = [], injections = inject.match(rword);
@@ -410,8 +424,8 @@
     v2.fn = v2.prototype = {
         constructor: function (tag, options) {
             options = options || {};
-            options.owner = options.owner || this;
-            options.$$ = options.$$ || options.owner.$;
+            options.$master = options.$master || this;
+            options.$$ = options.$$ || options.$master.$;
 
             this.$components = this.$components || {};
 
@@ -429,8 +443,9 @@
         access: false,
         $: null,
         $$: null,
+        $master: null,
+        template: '',
         data: null,
-        owner: null,
         events: {},
         methods: {},
         wildCards: {},
@@ -444,52 +459,80 @@
             commit: 8
         },
         define: function (name, extra, userDefined) {
-            var my = this, contains;
+            var my = this, contains, node = this.$core || this.$;
             if (v2.isPlainObject(name)) {
                 return v2.each(name, function (attributes, name) {
                     my.define(name, attributes, userDefined);
                 }), this;
             }
             if (v2.isFunction(extra)) {
-                contains = name in this.$;
+                contains = name in node;
                 return v2.define(this, name, {
                     get: (contains || userDefined) ? function () {
-                        return my.$[name];
+                        return node[name];
                     } : function () {
-                        return my.$.getAttribute(name);
+                        return node.getAttribute(name);
                     },
-                    set: contains ?
+                    set: (contains || userDefined) ?
                         function (value) {
-                            extra.call(my, my.$[name] = value || my.$[name]);
+                            extra.call(my, (node[name] = value) || node[name]);
                         } :
-                        userDefined ?
-                            function (value) {
-                                my.$[name] = extra.call(my, value) || value;
-                            } : function (value) {
-                                my.$.setAttribute(name, value + '');
-                                extra.call(my, my.$.getAttribute(name));
+                        function (value) {
+                            if (typeof value === 'boolean') {
+                                if (value) {
+                                    node.setAttribute(name, name);
+                                } else {
+                                    node.removeAttribute(name);
+                                }
+                                extra.call(my, value);
+                            } else {
+                                if (value == null) {
+                                    node.removeAttribute(name);
+                                } else {
+                                    node.setAttribute(name, value + '');
+                                }
+                                extra.call(my, node.getAttribute(name));
                             }
+                        }
                 });
             }
-            if (v2.isPlainObject(extra)) {
+            if (extra === true || v2.isPlainObject(extra)) {
                 return v2.define(this, name, extra);
             }
             v2.each(name.match(rnotwhite), function (name) {
-                contains = userDefined || name in my.$;
+                contains = name in node;
                 var attributes = {
-                    get: contains ? function () {
-                        return my.$[name];
-                    } : function () {
-                        return my.$.getAttribute(name);
-                    }
+                    get: (contains || userDefined) ?
+                        function () {
+                            return node[name];
+                        } :
+                        function () {
+                            return node.getAttribute(name);
+                        },
+                    set: contains ?
+                        function (value) {
+                            node[name] = value;
+                        } :
+                        userDefined ?
+                            function (value) {
+                                if (typeof value === 'boolean') {
+                                    if (value) {
+                                        node.setAttribute(name, name);
+                                    } else {
+                                        node.removeAttribute(name);
+                                    }
+                                } else {
+                                    if (value == null) {
+                                        node.removeAttribute(name);
+                                    } else {
+                                        node.setAttribute(name, value + '');
+                                    }
+                                }
+                            } :
+                            function (value) {
+                                node.setAttribute(name, value + '');
+                            }
                 };
-                if (extra !== false) {
-                    attributes.set = contains ? function (value) {
-                        my.$[name] = value;
-                    } : function (value) {
-                        my.$.setAttribute(name, value + '');
-                    };
-                }
                 v2.define(my, name, attributes);
             });
             return this;
@@ -504,45 +547,80 @@
             }
             return selector;
         },
+        first: function () {
+            return this.$.firstElementChild || v2.sibling(this.$.firstChild, 'nextSibling', true);
+        },
+        last: function () {
+            return this.$.lastElementChild || v2.sibling(this.$.lastChild, 'previousSibling', true);
+        },
         children: function () {
-            return new ArrayThen(v2.siblings(this.$.firstChild));
+            return new ArrayThen(this.$.children || v2.siblings(this.$.firstChild));
         },
         baseConfigs: function (option) {
             this.base = this.base || {};
             this.init = function (tag) {
-                tag = tag || "div";
-                var n, node, context;
-                if (!option || !(node = option.$) && !(context = option.$$)) {
-                    return this.$$ = document.body, this.$ = this.$$.appendChild(document.createElement(tag));
-                }
-                if (context) {
-                    context = this.take(context, document);
-                }
-                context = context || document.body;
-                if (node) {
-                    node = this.take(node, context);
-                }
-                if (isArraylike(context)) context = context[0];
-                if (!node) {
-                    n = document.createElement(tag);
-                    if (context.nodeType) {// DOM
-                        context.appendChild(node = n);
+                var n, s, m, node, match, variable = this.variable, context, parsing = function (match, append) {
+                    if (s = match[2]) {
+                        while (m = rattr.exec(s)) {
+                            if (m[3] && m[1] === 'class') {
+                                variable.addClass = variable.addClass ? variable.addClass + ' ' + m[3] : m[3];
+                            } else if (m[1] in this) {
+                                this[m[1]] = typeof this[m[1]] === 'boolean' ? true : m[3];
+                            } else if (!m[3] || !(n = v2.attr(node, m[1])) || !(n === m[3])) {
+                                v2.attr(node, m[1], m[3]);
+                            }
+                            s = s.slice(m[0].length);
+                        }
                     }
-                } else {
-                    if (isArraylike(node)) node = node[0];
-                    if (node.nodeType) {// DOM
-                        context = node.parentNode;
+                    if (append && (s = match[9]) && !v2.any(node.childNodes, function (n) {
+                        return n.nodeType === 1 || n.nodeType === 3 && core_trim.call(n.nodeValue);
+                    })) {
+                        v2.empty(node);
+                        v2.append(node, [s]);
                     }
+                };
+                if (this.template) {
+                    if (!(match = rtemplate.exec(this.template)) || tag && !(tag === match[1])) {
+                        v2.error('Invalid template. Template TAG is different from control TAG.');
+                    }
+                    tag = match[1];
+                }
+                tag = tag || 'div';
+
+                if (!option ||
+                    !(context = option.$$) ||
+                    !(context = this.take(context, document)) ||
+                    !(context = isArraylike(context) ? context[0] : context) ||
+                    !(context.nodeType === 1)) {
+                    context = document.body;
+                }
+
+                if (!option ||
+                    !(node = option.$) ||
+                    !(node = this.take(node, context)) ||
+                    !(node = isArraylike(node) ? node[0] : node) ||
+                    !(node.nodeType === 1)) {
+                    if (match) {
+                        v2.append(xhtmlNode, [this.template]);
+                        if (xhtmlNode.childNodes.length > 1) {
+                            v2.empty(xhtmlNode);
+                            return v2.error('Invalid template. A template can contain only one element node!');
+                        }
+                        node = xhtmlNode.firstChild;
+                        parsing.call(this, match, false);
+                    }
+                    return this.$$ = context, this.$ = this.$$.appendChild(node || document.createElement(tag));
                 }
                 if (!v2.nodeName(node, tag)) {
                     var html = node.outerHTML;
-                    v2.append(xhtmlNode, [html.replace(rxhtmlTag, function (_all, tag_pre, tag_next) {
+                    v2.append(xhtmlNode, [html.replace(rstandardTag, function (_all, tag_pre, tag_next) {
                         return _all.replace(tag_pre || tag_next, tag);
                     })]);
                     var next = node.nextSibling;
                     context.removeChild(node);
                     context.insertBefore(node = xhtmlNode.lastChild, next);
                 }
+                if (match) { parsing.call(this, match, true); }
                 return this.$$ = context, this.$ = node;
             };
         },
@@ -608,11 +686,15 @@
 
                         _key = key;
 
+                        _contains = true;
+
                         type = v2.type(value);
 
-                        _contains = key in context;
-
-                        _value = _contains ? context[key] : variable[key = initWildCards(wildCards, key, type)];
+                        if (!(key in context)) {
+                            key = initWildCards(wildCards, key, type);
+                            _contains = key in context;
+                        }
+                        _value = _contains ? context[key] : variable[key];
 
                         switch (type) {
                             case "function":
@@ -680,11 +762,16 @@
                 };
             });
 
-            v2.defineReadonly(this, "tag", this.tag);
+            v2.define(this, "tag", true);
+
             v2.defineReadonly(this, "namespace", namespace);
 
             v2.defineReadonly(this, 'variable', variable);
             v2.defineReadonly(this, "identity", ++identity);
+
+            renderWildCard(this, function (type) {
+                return type !== 'function';
+            }, variable);
 
             initControls = (extendsCallback = (makeCallback = undefined));
         },
@@ -755,7 +842,7 @@
                     v2.merge(v2[name + "s"] || (v2[name + "s"] = HTMLColection(name)), [this]);
                 }
             }, this);
-            renderWildCard(this, variable);
+            renderWildCard(this, 'function', variable);
         },
         commit: function () {
             if (!this.skipOn) {
@@ -764,7 +851,7 @@
         },
         invoke: function (callbak) {
             if (v2.isString(callbak)) {
-                callbak = this[callbak] || this[v2.camelCase(callbak)];
+                callbak = this[callbak] || this[v2.camelCase(callbak)] || this.methods[callbak] || this.methods[v2.camelCase(callbak)];
             }
             if (v2.isFunction(callbak)) {
                 return callbak.apply(this, core_slice.call(arguments, 1));
@@ -1047,6 +1134,12 @@
                     control[key](value);
                 }
             }
+        },
+        '#': {
+            type: "string",
+            exec: function (_control, value) {
+                if (v2.isString(value)) return v2.htmlSerialize(value);
+            }
         }
     });
 
@@ -1209,111 +1302,6 @@
         }
     });
 
-    function noop() { }
-
-    var xhrCb = window.XMLHttpRequest,
-        xhr = new xhrCb(),
-        xhrId = 0,
-        xhrWait = {},
-        xhrCallbacks = {},
-        xhr_send = xhr.send,
-        xhr_open = xhr.open,
-        xhr_abort = xhr.abort;
-    v2.extend(xhrCb.prototype, {
-        open: function (_method, _url, async) {
-            if (async && CurrentV2Control) {
-                var status, xhr = this,
-                    v2Control = CurrentV2Control,
-                    identity = v2Control.identity;
-                v2Control.sleep(true);
-                if (xhrWait[identity]) {
-                    xhrWait[identity] += 1;
-                } else {
-                    xhrWait[identity] = 1;
-                }
-                xhrCallbacks[xhr.xhrId = ++xhrId] = function () {
-                    if (xhr.readyState === 4) {
-                        status = xhr.status;
-                        xhr.onreadystatechange = noop;
-                        if (status >= 200 && status < 300 || status === 304 || status === 1223) {
-                            if (!(xhrWait[identity] -= 1)) {
-                                v2Control.sleep(false);
-                            }
-                        }
-                        delete xhrCallbacks[xhr.xhrId];
-                    }
-                };
-            }
-            return applyCallback(xhr_open, arguments, this);
-        },
-        send: function (data) {
-            var xhr = this, xhr_id = xhr.xhrId;
-            if (xhr_id && xhr_id > 0) {
-                setTimeout(function () {
-                    if (xhr.readyState === 4) {
-                        if (xhr_id in xhrCallbacks) {
-                            xhrCallbacks[xhr_id]();
-                        }
-                        return;
-                    }
-                    var onchange, callback = xhr.onreadystatechange;
-                    xhr.onreadystatechange = callback ? (onchange = function () {
-                        applyCallback(callback, arguments, this);
-                        if (xhr_id in xhrCallbacks) {
-                            xhrCallbacks[xhr_id]();
-                        }
-                        if (xhr_id in xhrCallbacks && onchange != xhr.onreadystatechange) {
-                            callback = xhr.onreadystatechange || noop;
-                            xhr.onreadystatechange = onchange;
-                        }
-                    }) : xhrCallbacks[xhr_id];
-                });
-            }
-            return data ? xhr_send.call(this, data) : xhr_send.call(this);
-        },
-        abort: function () {
-            if (this.xhrId) {
-                delete xhrCallbacks[this.xhrId];
-            }
-            return xhr_abort.call(this);
-        }
-    });
-
-    if (typeof define === "function") {
-        define("v2", [], function () { return v2; });
-    }
-    setTimeout(function () {
-        console.log(coreCards);
-    }, 1000);
-    window.v2kit = window.v2 = v2;
-});
-/*!
- * JavaScript v2 v1.0.1
- * https://github.com/yepsharp/v2
- *
- ** @author hyly
- ** @date 2018-12-01
- ** @descript a valuable technology object.
- */
-(function (factory) {
-    if (typeof module === 'object' && module.exports) {
-        module.exports = function (root, v2kit) {
-            if (typeof v2kit === 'undefined') {
-                if (typeof window !== 'undefined') {
-                    v2kit = require('v2');
-                }
-                else {
-                    v2kit = require('v2')(root);
-                }
-            }
-            factory(v2kit);
-            return v2kit;
-        };
-    } else {
-        factory(v2kit);
-    }
-}(function (v2) {
-    'use strict';
     function assert(callback) {
         var div = document.createElement("div");
         try {
@@ -1324,7 +1312,6 @@
             div = null;
         }
     };
-    var whitespace = "[\\x20\\t\\r\\n\\f]";
     var matches, disconnectedMatch, querySelector, matchesSelector, outermostContext;
     var rbuggyMatches = [], rbuggyQSA = [":focus"];
     var
@@ -1343,12 +1330,8 @@
         rsibling = /[\x20\t\r\n\f]*[+~]/,
         rnative = /^[^{]+\{\s*\[native code/,
         rquickExpr = /^((#|\.)?([\w-]*))$/,
-        characterEncoding = "(?:\\\\.|[\\w-]|[^\\x00-\\xa0])+",
-        identifier = characterEncoding.replace("w", "w#"),
-        operators = "([*^$|!~]?=)",
-        attributes = "\\[" + whitespace + "*(" + characterEncoding + ")" + whitespace +
-            "*(?:" + operators + whitespace + "*(?:(['\"])((?:\\\\.|[^\\\\])*?)\\3|(" + identifier + ")|)|)" + whitespace + "*\\]",
-
+        attributes = "\\[" + whitespace + "*(" +
+            characterEncoding + ")" + whitespace + "*(?:" + operators + whitespace + "*(?:(['\"])((?:\\\\.|[^\\\\])*?)\\3|(" + identifier + ")|)|)" + whitespace + "*\\]",
         pseudos = ":(" + characterEncoding + ")(?:\\(((['\"])((?:\\\\.|[^\\\\])*?)\\3|((?:\\\\.|[^\\\\()[\\]]|" + attributes.replace(3, 8) + ")*)|.*)\\)|)",
         rtrim = new RegExp("^" + whitespace + "+|((?:^|[^\\\\])(?:\\\\.)*)" + whitespace + "+$", "g"),
         rcomma = new RegExp("^" + whitespace + "*," + whitespace + "*"),
@@ -1438,7 +1421,7 @@
                 if ((match = rcombinators.exec(string))) {
                     matched = match.shift();
                     tokens.push({
-                        value: v2.trim(matched),
+                        value: core_trim.call(matched),
                         type: match[0].replace(rtrim, " ")
                     });
                     string = string.slice(matched.length);
@@ -1447,7 +1430,7 @@
                     if ((match = matchExpr[type].exec(string)) && (!ready[type] || (match = ready[type](match)))) {
                         matched = match.shift();
                         tokens.push({
-                            value: v2.trim(matched),
+                            value: core_trim.call(matched),
                             type: type,
                             matches: match
                         });
@@ -2273,7 +2256,7 @@
                         clazz += " " + type;
                     }
                 }
-                elem.className = v2.trim(clazz.replace(rclass, " "));
+                elem.className = core_trim.call(clazz.replace(rclass, " "));
             }
         },
         removeClass: function (elem, value) {
@@ -2289,7 +2272,7 @@
                         clazz = clazz.replace(pattern, " ");
                     }
                 }
-                elem.className = v2.trim(clazz.replace(rclass, " "));
+                elem.className = core_trim.call(clazz.replace(rclass, " "));
             }
         },
         toggleClass: function (elem, value, toggle) {
@@ -2435,7 +2418,7 @@
                     filter = currentStyle && currentStyle.filter || style.filter || "";
                 style.zoom = 1;
                 if ((value >= 1 || value === "") &&
-                    v2.trim(filter.replace(ralpha, "")) === "" &&
+                    core_trim.call(filter.replace(ralpha, "")) === "" &&
                     style.removeAttribute) {
                     style.removeAttribute("filter");
                     if (value === "" || currentStyle && !currentStyle.filter) {
@@ -2450,24 +2433,27 @@
     }
 
     v2.extend({
-        siblings: function (elem, node) {
-            var r = [];
-            for (; elem; elem = elem.nextSibling) {
-                if (elem.nodeType === 1 && elem !== node) {
-                    r.push(elem);
+        siblings: function (elem, exclude) {
+            var node = elem, r = [];
+            for (; node; node = node.nextSibling) {
+                if (node.nodeType === 1 && (!exclude || elem !== node)) {
+                    r.push(node);
                 }
             }
             return r;
         },
-        sibling: function (elem, dir) {
+        sibling: function (elem, dir, contains) {
+            if (contains && elem.nodeType === 1) {
+                return elem;
+            }
             do {
                 elem = elem[dir];
             } while (elem && elem.nodeType !== 1);
             return elem;
         },
-        dir: function (elem, dir) {
+        dir: function (elem, dir, contains) {
             var r = [],
-                n = elem[dir];
+                n = contains ? elem : elem[dir];
 
             while (n && n.nodeType !== 9) {
                 if (n.nodeType === 1) {
@@ -2721,13 +2707,14 @@
                 var control = this;
                 if (fn in control) {
                     fn = control[fn];
+                    if (type[0] !== '$') { type = '$' + type; }
                 } else {
                     do {
                         if (fn in control.methods) {
                             fn = control.methods[fn];
                             break;
                         }
-                    } while (control = control.owner);
+                    } while (control = control.$master);
                 }
                 control = null;
             }
@@ -2761,7 +2748,7 @@
                 if (!matched || (match = rcombinators2.exec(string))) {
                     groups.unshift(token = {});
                     if (match) {
-                        token.type = v2.trim(matched = match.shift());
+                        token.type = core_trim.call(matched = match.shift());
                         string = string.slice(matched.length);
                     }
                     if (match = rgroup.exec(string)) {
@@ -2883,10 +2870,78 @@
     });
     v2.htmlSerialize = htmlSerialize;
 
-    v2.useCards('#', {
-        type: "string",
-        exec: function (_control, value) {
-            if (v2.isString(value)) return v2.htmlSerialize(value);
+    function noop() { }
+
+    var xhrCb = window.XMLHttpRequest,
+        xhr = new xhrCb(),
+        xhrId = 0,
+        xhrWait = {},
+        xhrCallbacks = {},
+        xhr_send = xhr.send,
+        xhr_open = xhr.open,
+        xhr_abort = xhr.abort;
+    v2.extend(xhrCb.prototype, {
+        open: function (_method, _url, async) {
+            if (async && CurrentV2Control) {
+                var status, xhr = this,
+                    v2Control = CurrentV2Control,
+                    identity = v2Control.identity;
+                v2Control.sleep(true);
+                if (xhrWait[identity]) {
+                    xhrWait[identity] += 1;
+                } else {
+                    xhrWait[identity] = 1;
+                }
+                xhrCallbacks[xhr.xhrId = ++xhrId] = function () {
+                    if (xhr.readyState === 4) {
+                        status = xhr.status;
+                        xhr.onreadystatechange = noop;
+                        if (status >= 200 && status < 300 || status === 304 || status === 1223) {
+                            if (!(xhrWait[identity] -= 1)) {
+                                v2Control.sleep(false);
+                            }
+                        }
+                        delete xhrCallbacks[xhr.xhrId];
+                    }
+                };
+            }
+            return applyCallback(xhr_open, arguments, this);
+        },
+        send: function (data) {
+            var xhr = this, xhr_id = xhr.xhrId;
+            if (xhr_id && xhr_id > 0) {
+                setTimeout(function () {
+                    if (xhr.readyState === 4) {
+                        if (xhr_id in xhrCallbacks) {
+                            xhrCallbacks[xhr_id]();
+                        }
+                        return;
+                    }
+                    var onchange, callback = xhr.onreadystatechange;
+                    xhr.onreadystatechange = callback ? (onchange = function () {
+                        applyCallback(callback, arguments, this);
+                        if (xhr_id in xhrCallbacks) {
+                            xhrCallbacks[xhr_id]();
+                        }
+                        if (xhr_id in xhrCallbacks && onchange != xhr.onreadystatechange) {
+                            callback = xhr.onreadystatechange || noop;
+                            xhr.onreadystatechange = onchange;
+                        }
+                    }) : xhrCallbacks[xhr_id];
+                });
+            }
+            return data ? xhr_send.call(this, data) : xhr_send.call(this);
+        },
+        abort: function () {
+            if (this.xhrId) {
+                delete xhrCallbacks[this.xhrId];
+            }
+            return xhr_abort.call(this);
         }
     });
-}));
+
+    if (typeof define === "function") {
+        define("v2", [], function () { return v2; });
+    }
+    window.v2kit = window.v2 = v2;
+});

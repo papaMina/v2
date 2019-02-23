@@ -1,8 +1,8 @@
 ﻿define(function () {
     v2.use("select", {
         select: function () {
-            /** 最近一个触发控件 */
-            this.$sharp = null;
+            /** 涉及到的控件 */
+            this.$touch = null;
             /** 当前选中的元素 */
             this.selectedIndex = -1;
         },
@@ -48,7 +48,7 @@
                 fmt,
                 '   }',
                 '}}`'];
-            this.append(htmls.join('').each(this.data = data));
+            this.append(htmls.join('').forCb(this.data = data));
         },
         commit: function () {
             var my = this;
@@ -56,12 +56,12 @@
             this.on('click', '[data-index]:not(.disabled)', function () {
                 my.selectedIndex = +v2.attr(this, 'data-index');
             });
-            this.owner.on('click', function () {
-                my.$sharp.toggleClass('open');
+            this.$master.on('click', function () {
+                my.$touch.toggleClass('open');
                 return false;
             });
             v2.on(document, 'click', function () {
-                my.$sharp.removeClass('open');
+                my.$touch.removeClass('open');
             });
         }
     });

@@ -303,7 +303,11 @@
          */
         define(name: string, attributeSet: (value: any) => any, userDefined: boolean): V2Control,
         /** 子节点的数组 */
-        children(): ArrayThen
+        children(): ArrayThen,
+        /** 返回主元素的第一个有效元素 */
+        first(): Element,
+        /** 返回主元素的最后一个有效元素 */
+        last(): Element
     }
     /** 控件 */
     interface V2Control extends V2ControlBase {
@@ -325,12 +329,14 @@
         readonly isReady: boolean,
         /** 入参变量(入参) */
         readonly variable: PlainObject,
-        /** 所有者，拥有者，隶属于 */
-        readonly owner: V2Control,
+        /** 母控件 */
+        readonly $master: V2Control,
         /** 为真时采用“max-width”和“max-height”限制控件大小，否则采用“width”和“height”限制控件大小. 默认：false*/
         limit: boolean,
         /** 是否加载控件的时候加载数据，为真并且存在“ajax”方法时，在“render”方法完成后自动调用“ajax”方法并等待数据加载完成后继续渲染控件，否则控件直接渲染完成。默认：false */
         access: boolean,
+        /** 模板 */
+        template: string,
         /** 主元素 */
         $: Node,
         /** 主元素的父元素 */
@@ -340,6 +346,7 @@
             pending: 0.5, // 准备
             init: 1, // 初始化（查询或生产主元素）
             render: 2, // 渲染控件
+            usb:3, //属性和DOM桥接
             resolve: 4, // 生产控件（处理控件复杂逻辑）
             commit: 8 // 完成提交（绑定事件）
         * }

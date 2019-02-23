@@ -32,7 +32,7 @@
                 });
             }
         };
-        if (option.dropdown && (!option.owner || !(option.owner.tag === "button" || option.owner.tag === 'button-group'))) {
+        if (option.dropdown && (!option.$master || !(option.$master.tag === "button" || option.$master.tag === 'button-group'))) {
             return v2.extend(config, {
                 render: function () {
                     this.addClass('btn-group');
@@ -56,9 +56,12 @@
             init: function () {
                 this.base.init('button');
             },
-            render: function () {
+            render: function (variable) {
                 this.base.render();
                 this.addClass('btn');
+                if (!variable.addClass) {
+                    this.addClass(this.type === 'submit' ? 'btn-primary' : this.type === 'reset' ? 'btn-warning' : 'btn-default');
+                }
                 if (this.lg || this.sm || this.xs) {
                     this.addClass(this.lg ? 'btn-lg' : this.sm ? 'btn-sm' : 'btn-xs');
                 }
@@ -82,21 +85,21 @@
                     var my = this;
                     this.define('selectedIndex', {
                         get: function () {
-                            return my.$charp.selectedIndex;
+                            return my.$sharp.selectedIndex;
                         },
                         set: function (index) {
-                            my.$charp.selectedIndex = index;
+                            my.$sharp.selectedIndex = index;
                         }
                     }, true).define('selectedValue', {
                         get: function () {
-                            return my.$charp.selectedValue;
+                            return my.$sharp.selectedValue;
                         }
                     });
                 }
             },
             resolve: function (data) {
                 if (this.dropdown) {
-                    this.$charp = this.constructor('select', { $$: this.$$, $sharp: this.owner, data: data });
+                    this.$sharp = this.constructor('select', { $$: this.$$, $touch: this.$master, data: data });
                 }
             }
         });

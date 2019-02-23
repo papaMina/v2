@@ -450,10 +450,10 @@
         eval: function (string, json) {
             return linqCode(json, string);
         },
-        map: replace,
-        compile: compile,
-        if: judge,
-        each: forEach
+        withCb: replace,
+        compileCb: compile,
+        ifCb: judge,
+        forCb: forEach
     };
     v2.each(v2.rsm, function (value, key) {
         String.prototype[key] = function (json, showMatchStr) {
@@ -472,10 +472,10 @@
         }
     });
     var typeCb = {
-        each: 8,
-        if: 4,
-        compile: 2,
-        map: 1
+        forCb: 8,
+        ifCb: 4,
+        compileCb: 2,
+        withCb: 1
     };
     v2.useCards({
         "^": { // eval

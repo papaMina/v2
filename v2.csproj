@@ -62,17 +62,20 @@
   <ItemGroup>
     <Content Include="js\appsettings.js" />
     <Content Include="js\components\v2.input.js" />
+    <Content Include="js\components\v2.inputGroup.js" />
     <Content Include="js\lib\ajax\axios.js" />
     <Content Include="js\lib\ajax\axios.min.js" />
-    <Content Include="js\lib\fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="link\common.css" />
+    <Content Include="link\lib\fonts\glyphicons-halflings-regular.svg" />
     <Content Include="js\lib\vue\vue.js" />
     <Content Include="js\lib\vue\vue.min.js" />
     <Content Include="js\components\v2.button.js" />
     <Content Include="js\components\v2.buttonGroup.js" />
     <Content Include="js\components\v2.select.js" />
     <Content Include="js\views\index.js" />
-    <Content Include="js\lib\bootstrap\bootstrap.css" />
-    <Content Include="js\lib\bootstrap\bootstrap.min.css" />
+    <Content Include="link\lib\bootstrap\bootstrap.css" />
+    <Content Include="link\lib\bootstrap\bootstrap.min.css" />
+    <Content Include="link\core.css" />
     <Content Include="require.js" />
     <Content Include="require.min.js" />
     <Content Include="README.md" />
@@ -80,12 +83,12 @@
     <Content Include="js\v2.tool.js" />
     <Content Include="usage\v2\package-lock.json" />
     <Content Include="src\v2.esm.css" />
-    <Content Include="js\lib\bootstrap\bootstrap.css.map" />
-    <Content Include="js\lib\bootstrap\bootstrap.min.css.map" />
-    <Content Include="js\lib\fonts\glyphicons-halflings-regular.eot" />
-    <Content Include="js\lib\fonts\glyphicons-halflings-regular.ttf" />
-    <Content Include="js\lib\fonts\glyphicons-halflings-regular.woff" />
-    <Content Include="js\lib\fonts\glyphicons-halflings-regular.woff2" />
+    <Content Include="link\lib\bootstrap\bootstrap.css.map" />
+    <Content Include="link\lib\bootstrap\bootstrap.min.css.map" />
+    <Content Include="link\lib\fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="link\lib\fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="link\lib\fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="link\lib\fonts\glyphicons-halflings-regular.woff2" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -150,7 +153,9 @@
     <TypeScriptCompile Include="usage\v2\v2kitStatic.Rsm.d.ts" />
     <TypeScriptCompile Include="usage\v2\v2kitStatic.Tool.d.ts" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="link\views\" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

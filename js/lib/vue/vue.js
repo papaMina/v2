@@ -5131,7 +5131,7 @@
         };
 
         Vue.set = set;
-        Vue.delete = del;
+        Vue.deleteCb = del;
         Vue.nextTick = nextTick;
 
         Vue.options = Object.create(null);
@@ -5510,7 +5510,7 @@
      * Virtual DOM patching algorithm based on Snabbdom by
      * Simon Friis Vindum (@paldepind)
      * Licensed under the MIT License
-     * https://github.com/paldepind/snabbdom/blob/master/LICENSE
+     * https://github.com/paldepind/snabbdom/blob/$master/LICENSE
      *
      * modified by Evan You (@yyx990803)
      *
