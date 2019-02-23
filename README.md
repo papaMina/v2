@@ -14,37 +14,37 @@
 >> 将对象和字符串做关系映射。
 
 ---
-    String.map({JSON},|Boolean|?)
+    String.withCb({JSON},|Boolean|?)
 ----
 
-参考解说：[Blog](https://www.cnblogs.com/vbing/p/10048901.html "map")
+参考解说：[Blog](https://www.cnblogs.com/vbing/p/10048901.html "withCb")
 
 # 格式化字符串（三）
 > #### 直接使用字符串“.”方法的方式格式化字符串。
->> 字符串增加`if`方法，使用判断的方式格式化字符串。
+>> 字符串增加`ifCb`方法，使用判断的方式格式化字符串。
 
 ---
-    String.if({JSON},|Boolean|?)
+    String.ifCb({JSON},|Boolean|?)
 ----
 
-参考解说：[Blog](https://www.cnblogs.com/vbing/p/10050075.html "if")
+参考解说：[Blog](https://www.cnblogs.com/vbing/p/10050075.html "ifCb")
 
 # 格式化字符串（四）
 > #### 直接使用字符串“.”方法的方式格式化字符串。
->> 字符串增加`each`方法，使用遍历的方式格式化字符串。
+>> 字符串增加`forCb`方法，使用遍历的方式格式化字符串。
 
 ---
-    String.each({Array|JSON},|Boolean|?)
+    String.forCb({Array|JSON},|Boolean|?)
 ----
 
-参考解说：[Blog](https://www.cnblogs.com/vbing/p/10050240.html "each")
+参考解说：[Blog](https://www.cnblogs.com/vbing/p/10050240.html "forCb")
 
 # 格式化字符串（五）
 > #### 直接使用字符串“.”方法的方式格式化字符串。
 >> 将对象和字符串做关系映射并进行运算。
 
 ---
-    String.compile({Array|JSON},|Boolean|?)
+    String.compileCb({Array|JSON},|Boolean|?)
 ----
 
-参考解说：[Blog](https://www.cnblogs.com/vbing/p/10321024.html "compile")
+参考解说：[Blog](https://www.cnblogs.com/vbing/p/10321024.html "compileCb")
