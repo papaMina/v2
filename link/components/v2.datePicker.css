@@ -1,0 +1,380 @@
+﻿input::-webkit-calendar-picker-indicator { /*这是控制下拉小箭头的*/
+    display: none;
+}
+
+.date-picker-icon,
+.date-picker-icon-default,
+.date-picker-icon-danlan,
+.date-picker-icon-dahong,
+.date-picker-icon-molv {
+    height: 22px;
+    line-height: 22px;
+    padding-right: 20px;
+    border: 1px solid #C6C6C6;
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-color: #fff;
+    outline: 0;
+}
+
+.date-picker-icon-default {
+    padding-right: 26px;
+    background-image: url(../skins/default/icon.png)
+}
+
+.date-picker-icon-danlan {
+    border: 1px solid #B1D2EC;
+    background-image: url(../skins/danlan/icon.png)
+}
+
+.date-picker-icon-dahong {
+    background-image: url(../skins/dahong/icon.png)
+}
+
+.date-picker-icon-molv {
+    background-image: url(../skins/molv/icon.png)
+}
+
+.date-picker {
+    width: 240px;
+    font: 12px '\5B8B\4F53';
+    z-index: 99999999;
+    *margin: -2px 0 0 -2px;
+    *overflow: hidden;
+    -margin: 0;
+    -position: absolute !important;
+    background-color: #fff;
+}
+
+.date-picker li {
+    list-style: none;
+}
+
+.date-picker .date-picker-void {
+    cursor: text !important;
+}
+
+.date-picker a, .date-picker a:hover {
+    text-decoration: none;
+    blr: expression(this.onFocus=this.blur());
+    cursor: pointer;
+}
+
+    .date-picker a:hover {
+        text-decoration: none;
+    }
+
+.date-picker cite, .date-picker label {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-width: 5px;
+    border-style: dashed;
+    border-color: transparent;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.date-picker .date-picker-yms, .date-picker .date-picker-time {
+    display: none;
+}
+
+.date-picker .date-picker-show {
+    display: block;
+    z-index: 100;
+}
+
+.date-picker input {
+    outline: 0;
+    font-size: 14px;
+    background-color: #fff;
+}
+
+.date-picker-header {
+    position: relative;
+    height: 26px;
+    padding: 5px;
+    *width: 100%;
+    z-index: 99;
+}
+
+.date-picker-ym {
+    position: relative;
+    float: left;
+    height: 24px;
+    cursor: pointer;
+}
+
+    .date-picker-ym input {
+        float: left;
+        height: 24px;
+        line-height: 24px;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+    }
+
+    .date-picker-ym .date-picker-yms {
+        position: absolute;
+        left: -1px;
+        top: 24px;
+        height: 181px;
+    }
+
+.date-picker-y {
+    width: 121px;
+    margin-right: 6px;
+}
+
+    .date-picker-y input {
+        width: 64px;
+        margin-right: 15px;
+    }
+
+    .date-picker-y .date-picker-yms {
+        width: 121px;
+        text-align: center;
+    }
+
+        .date-picker-y .date-picker-yms a {
+            position: relative;
+            display: block;
+            height: 20px;
+        }
+
+        .date-picker-y .date-picker-yms ul {
+            height: 139px;
+            padding: 0;
+            *overflow: hidden;
+        }
+
+            .date-picker-y .date-picker-yms ul li {
+                float: left;
+                width: 60px;
+                height: 20px;
+                line-height: 20px;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                white-space: nowrap;
+            }
+
+.date-picker-m {
+    width: 99px;
+}
+
+    .date-picker-m .date-picker-yms {
+        width: 99px;
+        padding: 0;
+    }
+
+    .date-picker-m input {
+        width: 42px;
+        margin-right: 15px;
+    }
+
+    .date-picker-m .date-picker-yms span {
+        display: block;
+        float: left;
+        width: 42px;
+        margin: 5px 0 0 5px;
+        line-height: 24px;
+        text-align: center;
+        -display: inline;
+    }
+
+.date-picker-choose {
+    display: block;
+    float: left;
+    position: relative;
+    width: 20px;
+    height: 24px;
+}
+
+    .date-picker-choose.date-picker-chnext {
+        float: right
+    }
+
+    .date-picker-choose cite, .date-picker-tab cite {
+        left: 50%;
+        top: 50%;
+    }
+
+.date-picker-chtop cite {
+    margin: -7px 0 0 -5px;
+    border-bottom-style: solid;
+}
+
+.date-picker-chdown cite, .date-picker-ym label {
+    top: 50%;
+    margin: -2px 0 0 -5px;
+    border-top-style: solid;
+}
+
+.date-picker-chprev cite {
+    margin: -5px 0 0 -7px;
+}
+
+.date-picker-chnext cite {
+    margin: -5px 0 0 -2px;
+}
+
+.date-picker-ym label {
+    right: 28px;
+}
+
+.date-picker-table {
+    width: 230px;
+    margin: 0 5px;
+    border-collapse: collapse;
+    border-spacing: 0px;
+}
+
+    .date-picker-table td {
+        width: 31px;
+        height: 19px;
+        line-height: 19px;
+        text-align: center;
+        cursor: pointer;
+        font-size: 12px;
+    }
+
+    .date-picker-table thead {
+        height: 22px;
+        line-height: 22px;
+    }
+
+        .date-picker-table thead th {
+            font-weight: 400;
+            font-size: 12px;
+            text-align: center;
+        }
+
+.date-picker-bottom {
+    position: relative;
+    height: 22px;
+    line-height: 20px;
+    padding: 5px;
+    font-size: 12px;
+}
+
+    .date-picker-bottom #date-picker-hms {
+        position: relative;
+        z-index: 1;
+        float: left;
+    }
+
+.date-picker-time {
+    position: absolute;
+    left: 5px;
+    bottom: 26px;
+    width: 129px;
+    height: 125px;
+    *overflow: hidden;
+}
+
+    .date-picker-time .date-picker-hmsno {
+        padding: 5px 0 0 5px;
+    }
+
+        .date-picker-time .date-picker-hmsno span {
+            display: block;
+            float: left;
+            width: 24px;
+            height: 19px;
+            line-height: 19px;
+            text-align: center;
+            cursor: pointer;
+            *margin-bottom: -5px;
+        }
+
+.date-picker-time1 {
+    width: 228px;
+    height: 154px;
+}
+
+    .date-picker-time1 .date-picker-hmsno {
+        padding: 6px 0 0 8px;
+    }
+
+        .date-picker-time1 .date-picker-hmsno span {
+            width: 21px;
+            height: 20px;
+            line-height: 20px;
+        }
+
+.date-picker-msg {
+    left: 49px;
+    bottom: 67px;
+    width: 141px;
+    height: auto;
+    overflow: hidden;
+}
+
+    .date-picker-msg p {
+        padding: 5px 10px;
+    }
+
+.date-picker-bottom li {
+    float: left;
+    height: 20px;
+    line-height: 20px;
+    border-right: none;
+    font-weight: 900;
+}
+
+.date-picker-bottom .date-picker-sj {
+    width: 33px;
+    text-align: center;
+    font-weight: 400;
+}
+
+.date-picker-bottom input {
+    float: left;
+    width: 21px;
+    height: 20px;
+    line-height: 20px;
+    border: none;
+    text-align: center;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.date-picker-bottom .laydte-hsmtex {
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+}
+
+    .date-picker-bottom .laydte-hsmtex span {
+        position: absolute;
+        width: 20px;
+        top: 0;
+        right: 0px;
+        cursor: pointer;
+    }
+
+        .date-picker-bottom .laydte-hsmtex span:hover {
+            font-size: 14px;
+        }
+
+.date-picker-bottom .date-picker-btn {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+
+    .date-picker-bottom .date-picker-btn a {
+        float: left;
+        height: 20px;
+        padding: 0 6px;
+        -padding: 0 5px;
+    }
+
+.date-picker-bottom .date-picker-v {
+    position: absolute;
+    left: 10px;
+    top: 6px;
+    font-family: Courier;
+    z-index: 0;
+}

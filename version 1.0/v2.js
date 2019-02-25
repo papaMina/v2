@@ -476,7 +476,7 @@
          * @param {String} state 控件状态
          * @param {Boolean} falseStop 方法返回false是停止。
          */
-        whenThen: function (state, falseStop) {
+        switchCase: function (state, falseStop) {
             if (typeof state === "boolean") {
                 falseStop = state;
                 state = undefined;
@@ -701,7 +701,7 @@
                         v = !!(v - ~~sleep);
 
                         if (v && !sleep) {
-                            my.whenThen();
+                            my.switchCase();
                             while (v = callbacks.shift()) {
                                 v.call(my, my);
                             }
@@ -720,7 +720,7 @@
                         clearTimeout(timer);
                         timer = setTimeout(function () {
                             sleep = false;
-                            my.whenThen();
+                            my.switchCase();
                             while (v = callbacks.shift()) {
                                 v.call(my, my);
                             }
@@ -729,7 +729,7 @@
                 }
                 return sleep;
             }
-            this.whenThen();
+            this.switchCase();
         },
         /**
          * 控件相关属性设置

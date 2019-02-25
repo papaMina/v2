@@ -245,8 +245,9 @@
         }
         Object.defineProperty(obj, name, descriptor);
     }
+    var defineSurport = true;
     v2.define = function (obj, name, attributes) {
-        if (!obj || !name || !attributes) return obj;
+        if (!obj || !name || !attributes || !defineSurport) return obj;
         if (v2.isPlainObject(name)) {
             return v2.each(name, function (attributes, name) {
                 return v2.define(obj, name, attributes);
@@ -255,19 +256,32 @@
         var value = obj[name];
         v2.deleteCb(obj, name);
         if (attributes === true) {
-            return Object.defineProperty(obj, name, {
-                get: function () {
-                    return value;
-                }
-            }), obj;
+            try {
+                Object.defineProperty(obj, name, {
+                    get: function () {
+                        return value;
+                    }
+                });
+            } catch (_) {
+                defineSurport = false;
+                console.log('The current browser version is too low, please use a mainstream browser or IE9+.');
+            } finally {
+                return obj;
+            }
         }
         try {
             Object.defineProperty(obj, name, attributes);
         } catch (_) {
-            if (!('value' in attributes || 'writable' in attributes || 'configurable' in attributes || 'enumerable' in attributes)) throw _;
-            defineFix(obj, name, attributes);
+            if ('value' in attributes || 'writable' in attributes || 'configurable' in attributes || 'enumerable' in attributes) {
+                try {
+                    defineFix(obj, name, attributes);
+                } catch (_) {
+                    defineSurport = false;
+                    console.log('The current browser version is too low, please use a mainstream browser or IE9+.');
+                }
+            }
         };
-        if ((value || value === 0 || value === false) &&
+        if (defineSurport && (value || value === 0 || value === false) &&
             !(value === Infinity || value === -Infinity) &&
             ('set' in attributes || !attributes.writable && !('get' in attributes))) {
             obj[name] = value;
@@ -277,11 +291,14 @@
     };
 
     v2.defineReadonly = function (obj, name, value) {
-        v2.define(obj, name, {
-            get: function () {
-                return value;
-            }
-        });
+        if (defineSurport) {
+            v2.define(obj, name, {
+                get: function () {
+                    return value;
+                }
+            });
+        }
+        if (!defineSurport) obj[name] = value;
     };
 
     var typeCache = makeCache(function (type) {
@@ -405,6 +422,16 @@
                     return elem;
                 }
             }));
+        },
+        map: function (callback) {
+            var data, results = [];
+            v2.each(this, function (elem, i, arr) {
+                data = callback(elem, i, arr);
+                if (data === undefined) return;
+                if (isArraylike(data)) return v2.merge(results, data);
+                results.push(data);
+            });
+            return new ArrayThen(results);
         },
         then: function (callback) {
             return v2.each(this, callback);
@@ -547,14 +574,21 @@
             }
             return selector;
         },
+        when: function (extra) {
+            extra = extra || this.$;
+            if (v2.isString(extra)) {
+                extra = this.take(extra);
+            }
+            if (extra.nodeType) {
+                return new ArrayThen(extra.children || v2.siblings(extra.firstChild));
+            }
+            return new ArrayThen(extra || []);
+        },
         first: function () {
             return this.$.firstElementChild || v2.sibling(this.$.firstChild, 'nextSibling', true);
         },
         last: function () {
             return this.$.lastElementChild || v2.sibling(this.$.lastChild, 'previousSibling', true);
-        },
-        children: function () {
-            return new ArrayThen(this.$.children || v2.siblings(this.$.firstChild));
         },
         baseConfigs: function (option) {
             this.base = this.base || {};
@@ -801,7 +835,7 @@
                     i = !!(i - ~~sleep);
 
                     if (i && !sleep) {
-                        my.whenThen();
+                        my.switchCase();
                         while (i = callbacks.shift()) {
                             i.call(my, my);
                         }
@@ -820,7 +854,7 @@
                     clearTimeout(timer);
                     timer = setTimeout(function () {
                         sleep = false;
-                        my.whenThen();
+                        my.switchCase();
                         while (i = callbacks.shift()) {
                             i.call(my, my);
                         }
@@ -828,7 +862,7 @@
                 }
                 return sleep;
             };
-            this.whenThen();
+            this.switchCase();
         },
         usb: function () {
             this.define('disabled', function (value) {
@@ -857,7 +891,7 @@
                 return callbak.apply(this, core_slice.call(arguments, 1));
             }
         },
-        whenThen: function (state, falseStop) {
+        switchCase: function (state, falseStop) {
             if (typeof state === "boolean") {
                 falseStop = state;
                 state = undefined;
@@ -1012,7 +1046,7 @@
                     if (value != null) arr.push(value);
                 }
             }
-            return arr;
+            return core_concat.apply([], arr);
         },
         any: function (object, callback, context) {
             if (!object || !callback) return false;
@@ -1294,11 +1328,11 @@
         },
         '?visible': function (visible) {
             this.variable.visible = !(!visible || visible === 'none');
-            this.$.style.display = visible ?
+            this.css('display', visible ?
                 v2.isString(visible) ?
                     visible :
                     'block' :
-                'none';
+                'none');
         }
     });
 
@@ -1330,6 +1364,7 @@
         rsibling = /[\x20\t\r\n\f]*[+~]/,
         rnative = /^[^{]+\{\s*\[native code/,
         rquickExpr = /^((#|\.)?([\w-]*))$/,
+        rreturn = new RegExp("^(" + whitespace + "*return" + whitespace + "+)"),
         attributes = "\\[" + whitespace + "*(" +
             characterEncoding + ")" + whitespace + "*(?:" + operators + whitespace + "*(?:(['\"])((?:\\\\.|[^\\\\])*?)\\3|(" + identifier + ")|)|)" + whitespace + "*\\]",
         pseudos = ":(" + characterEncoding + ")(?:\\(((['\"])((?:\\\\.|[^\\\\])*?)\\3|((?:\\\\.|[^\\\\()[\\]]|" + attributes.replace(3, 8) + ")*)|.*)\\)|)",
@@ -1462,9 +1497,11 @@
         return selector;
     }
     function tokenize(selector) {
-        return v2.map(tokenCache(selector), function (tokens) {
-            return Array.prototype.slice.call(tokens);
+        var results = [];
+        v2.each(tokenCache(selector), function (tokens) {
+            results.push(core_slice.call(tokens));
         });
+        return results;
     }
     function makeFunction(callback) {
         return function () {
@@ -2017,7 +2054,11 @@
         if (!selector || !v2.isString(selector)) return fn.propagation || (fn.propagation = function (e) {
             if ((r = fn.call(this, e)) === false) {
                 if (e.preventDefault) e.preventDefault();
-                if (e.stopPropagation) e.stopPropagation();
+                if (e.stopPropagation) {
+                    e.stopPropagation();
+                } else {
+                    e.cancelBubble = true;
+                }
             }
             return r;
         });
@@ -2029,7 +2070,11 @@
                     if (elem.nodeType === 1 && (elem.disabled !== true || e.type !== "click") && v2.matches(elem, selector)) {
                         if ((r = fn.call(elem, e)) === false) {
                             if (e.preventDefault) e.preventDefault();
-                            if (e.stopPropagation) e.stopPropagation();
+                            if (e.stopPropagation) {
+                                e.stopPropagation();
+                            } else {
+                                e.cancelBubble = true;
+                            }
                         }
                         return r;
                     }
@@ -2737,7 +2782,13 @@
 
     v2.take = select;
 
+    function makeExpression(expression) {
+        return new Function('$', rreturn.test(expression) ? expression : 'return ' + expression);
+    }
+
     var
+        rbatch = /\$/g,
+        rlamda = /\$=>\{(.*?)\}/g,
         rchild = new RegExp("^" + whitespace + "*>"),
         rgroup = new RegExp("^" + whitespace + "*\\("),
         rcombinators2 = new RegExp("^" + whitespace + "*([>+])" + whitespace + "*"),
@@ -2791,15 +2842,32 @@
             var i = 0, html, token, next;
             while (token = groups[i++]) {
                 if (!html) {
-                    html = token.groups ? htmlDeserialize(token.groups) : htmlDeserializeToken(token);
+                    html = token.groups ? htmlDeserializeGroup(token) : htmlDeserializeToken(token);
                 }
                 if (next = groups[i]) {
                     if (next.groups) {
-                        html = htmlDeserialize(next.groups) + html;
+                        html = htmlDeserializeGroup(next) + html;
                     } else {
                         html = htmlDeserializeToken(next, token.type, html);
                     }
                 }
+            }
+            return html;
+        },
+        htmlDeserializeGroup = function (token) {
+            var htmls, multi = +token["MULTI"],
+                html = htmlDeserialize(token.groups);
+            if (multi > 0) {
+                htmls = [];
+                var fn, cache = {};
+                while (multi--) {
+                    htmls.unshift(html.replace(rlamda, function (_all, expression) {
+                        fn = cache[expression] || (cache[expression] = makeExpression(expression));
+                        return fn(multi + 1) || '';
+                    }).replace(rbatch, multi + 1));
+                }
+                destroyObject(cache);
+                html = htmls.join('');
             }
             return html;
         },
@@ -2828,9 +2896,14 @@
             html = html.join('');
             if (multi > 0) {
                 htmls = [];
+                var fn, cache = {};
                 while (multi--) {
-                    htmls.unshift(html.replace("$", multi + 1));
+                    htmls.unshift(html.replace(rlamda, function (_all, expression) {
+                        fn = cache[expression] || (cache[expression] = makeExpression(expression));
+                        return fn(multi + 1) || '';
+                    }).replace(rbatch, multi + 1));
                 }
+                destroyObject(cache);
                 html = htmls.join('');
             }
             if (relative === "+") html += xhtml;

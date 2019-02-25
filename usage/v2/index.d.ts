@@ -261,7 +261,7 @@
          * @param state 状态，不传的时候取控件当前状态。
          * @param falseStop 状态对应方法返回 false 时，是否终止执行。
          */
-        whenThen(state?: number, falseStop?: true): any,
+        switchCase(state?: number, falseStop?: true): any,
         /**
          * 释放插件。
          * @param deep 是否深度释放插件。深度释放时，插件内属性以及属性对象包含的属性都会被释放。
@@ -302,8 +302,23 @@
          * @param userDefined 是否为用户自定义的属性。
          */
         define(name: string, attributeSet: (value: any) => any, userDefined: boolean): V2Control,
-        /** 子节点的数组 */
-        children(): ArrayThen,
+        /** 返回主元素的子元素集合 */
+        when(): ArrayThen,
+        /**
+         * 放回当前选择器查询到元素的子元素集合。
+         * @param selector 选择器
+         */
+        when(selector: string): ArrayThen,
+        /**
+         * 返回指定元素的子元素集合。
+         * @param elem
+         */
+        when(elem: Element): ArrayThen,
+        /**
+         * 返回当前数组的元素集合。
+         * @param arr 数组
+         */
+        when(arr: ArrayLike<any>): ArrayThen,
         /** 返回主元素的第一个有效元素 */
         first(): Element,
         /** 返回主元素的最后一个有效元素 */
@@ -389,6 +404,11 @@
          * @param callback 分别执行当前数组中的元素。
          */
         then(callback: (value: T, index: number, array: ArrayThen<T>) => any): ArrayThen<T>,
+        /**
+         * 返回映射后的数组元素。
+         * @param callback 分别执行当前数组中的元素。
+         */
+        map<TReturn>(callback: (value: T, index: number, array: ArrayThen<T>) => TReturn | ArrayLike<TReturn>): ArrayThen<TReturn>,
         /**
          * 返回只包含第i个元素的数组对象。
          * @param i

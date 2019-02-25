@@ -1,0 +1,107 @@
+﻿.radio,
+.checkbox {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.radio,
+.checkbox {
+    position: relative;
+    margin-bottom: 0;
+    padding-left: 1.585em;
+    cursor: pointer;
+    height: 1.085em;
+    display: inline-block;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+    .radio > input[type='radio'],
+    .checkbox > input[type='checkbox'] {
+        opacity: 0;
+        background-color: rgba(0, 0, 0, 0);
+    }
+
+    .radio > input[type='radio'],
+    .checkbox > input[type='checkbox'] {
+        position: absolute;
+        z-index: 1;
+        top: 0;
+        bottom: 0;
+        left: .25em;
+        margin: auto;
+    }
+
+    .radio::after,
+    .radio::before,
+    .checkbox::after,
+    .checkbox::before {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        bottom: 0;
+        left: .25em;
+        margin: auto;
+        content: '';
+        background-color: #fff;
+    }
+
+    .checkbox::before,
+    .checkbox.checked::after {
+        width: 1em;
+        height: 1em;
+    }
+
+    .radio > input[type='radio'],
+    .checkbox > input[type='checkbox'] {
+        width: 1.085em;
+        height: 1.085em;
+    }
+
+    .radio::before,
+    .radio.checked::after {
+        width: 1.085em;
+        height: 1.085em;
+    }
+
+    .checkbox::after,
+    .checkbox::before {
+        left: .2925em;
+    }
+
+    .radio.checked::after,
+    .checkbox.checked::after {
+        display: table;
+    }
+
+
+    .radio::before,
+    .checkbox::before {
+        border: .085em solid #c1caca;
+        border-radius: .2em;
+        -webkit-box-shadow: inset 0 .125em .025em rgba(142, 142, 142, .25);
+        box-shadow: inset 0 .125em .025em rgba(142, 142, 142, .25);
+    }
+
+    .radio::before {
+        border-radius: 50%;
+    }
+
+    .radio.checked::before,
+    .checkbox.checked::before {
+        border-width: 0;
+        background-color: #419bf9;
+    }
+
+    .radio.checked::after,
+    .checkbox.checked::after {
+        content: '\2713';
+        text-align: center;
+        vertical-align: middle;
+        color: #fff;
+        background-color: transparent;
+    }

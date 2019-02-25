@@ -52,7 +52,7 @@ interface String {
      * @param showMatchStr 没有找到属性的时候释放显示原字符串。
      * @see \`{@link https://www.cnblogs.com/vbing/p/10048901.html }\`
      */
-    compile(json: Yep.PlainObject, showMatchStr?: boolean): string;
+    compileCb(json: Yep.PlainObject, showMatchStr?: boolean): string;
     /**
      * 使用判断的方式格式化字符串。
      * @param json 参数。

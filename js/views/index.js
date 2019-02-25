@@ -24,54 +24,6 @@ console.log(string); // => <ul><li>Vue</li><li>V2</li><li><s>Jquery<s></li><li>B
 console.log(v2.StringCb(13, "{a}+{b}+【`${for(var v<k> in .){ if(v>1){ $'参数“{k}”的值({v})大于1;' } else { ^'v+1024' } } }`】+【`${if(a>b){ ^'b'} else { ^'a' } }`】", { a: 2, b: 2.5, c: 3, d: 1 }));
 
 var timestamp = +new Date();
-v2.use({
-    "@text": "请输入{name}",
-    "&show": function (show) {
-        this.hide(show);
-        console.log(this.text);
-    },
-    hide: function (show) {
-        console.log(show);
-    }
-});
-//var i = "a + b".compile({ a: 1, b: 2 }) // => 3;
-v2.use("input", {
-    input: function () {
-        console.log("input 构造函数");
-    },
-    init: function () {
-        console.log("input");
-        this.base.init("input");
-    }
-});
-v2.use("input.inputEdit", {
-    init: function () {
-        console.log("inputEdit");
-        this.base.init();
-    },
-    input: function () {
-        console.log("input inputEdit 构造函数");
-    },
-    inputEdit: function () {
-        console.log("inputEdit 构造函数");
-    }
-});
-
-v2.use("input.*.inputEditV2", {
-    init: function () {
-        console.log("inputEditV2");
-        this.base.init();
-    },
-    input: function () {
-        console.log("input * inputEdit 构造函数");
-    },
-    inputEdit: function () {
-        console.log("inputEdit inputEditV2 构造函数");
-    },
-    inputEditV2: function () {
-        console.log("inputEditV2 构造函数");
-    }
-});
 
 //var x = v2("inputEditV2", {
 //    name: "单位名称1",
@@ -105,7 +57,7 @@ define(function (require) {
     });
     var input = require('components/v2.input');
     var i = input({
-        '#template': 'input[type="date"][required]',
+        '#template': 'input[type="time"][required]',
         events: {
             $click: 'click'
         },

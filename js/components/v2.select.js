@@ -16,7 +16,7 @@
         usb: function () {
             this.base.usb();
             this.define('selectedIndex', function (index) {
-                this.children()
+                this.when()
                     .then(function (elem) {
                         v2.removeClass(elem, 'active');
                     })

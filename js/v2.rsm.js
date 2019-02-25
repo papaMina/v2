@@ -414,7 +414,7 @@
                 return Math.pow(a, b);
             },
             "!": function (a, b) {
-                return !b ? a : b;
+                return !a ? b : '';
             },
             "?": function (a, b) {
                 return a ? b : '';

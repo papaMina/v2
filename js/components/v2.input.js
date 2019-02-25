@@ -1,4 +1,4 @@
-﻿define(function (_require) {
+﻿define(function (require) {
     var matchExpr = {
         number: /^[+-]?(0|[1-9][0-9]*)(?:\.([0-9]+))?$/,
         tel: /^(0[0-9]{2,3}-?)?(\+86\s+)?((1[3-9][0-9]{3}|[2-9])[0-9]{6,7})+(-[0-9]{1,4})?$/,
@@ -122,6 +122,11 @@
     }
 
     v2.use('input', {
+        components: {
+            datePicker: function () {
+                return require('components/v2.datePicker');
+            }
+        },
         input: function () {
             /** 最小值 */
             this.min = -Infinity;
@@ -229,7 +234,9 @@
                 .define('type', true)
                 .define({
                     value: function (value) {
-                        this.invoke('input-change', value);
+                        if (this.checkValidity()) {
+                            this.invoke('input-change', value);
+                        }
                     },
                     required: function (value) {
                         this.toggleClass('required', !!value);
@@ -251,10 +258,15 @@
                 }, true);
             }
         },
+        resolve: function () {
+            if (this.type === 'date' || this.type === 'time' || this.type === 'datetime' || this.type === 'datetime-local') {
+                this.$sharp = this.constructor('date-picker', { $$: document.body, $touch: this });
+            }
+        },
         commit: function () {
             this.base.commit();
             if (this.type === 'radio' || this.type === 'checkbox') {
-                return this.on('$click', function (e) {
+                return this.on('$click', function () {
                     if (this.type === 'checkbox') {
                         this.checked = !this.checked;
                     } else {
@@ -264,12 +276,21 @@
                 });
             }
 
+            if (this.type === 'date' || this.type === 'time' || this.type === 'datetime' || this.type === 'datetime-local') {
+                this.on('$click', function () {
+                    this.$sharp.show();
+                });
+            }
+
             var isChinese,
                 my = this,
                 value = my.value,
                 fixCallbackChange = function () {
                     if (isChinese || value === this.value) return;
-                    return my.invoke('input-change', value = this.value);
+                    if (this.checkValidity()) {
+                        return my.invoke('input-change', value = this.value);
+                    }
+                    return value = this.value;
                 };
             this.on("compositionstart", function () {
                 isChinese = true;

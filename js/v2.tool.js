@@ -183,7 +183,7 @@
         s: /(s+)/, //秒
         f: /(f+)/ //毫秒
     };
-    v2.extend(v2.date, {
+    return v2.extend(v2.date, {
         isLeapYear: function (year) {
             return (year % 400 == 0) || (year % 4 == 0) && (year % 100 > 0);
         },
