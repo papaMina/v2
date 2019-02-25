@@ -79,6 +79,7 @@
     <Content Include="link\lib\bootstrap\bootstrap.css" />
     <Content Include="link\lib\bootstrap\bootstrap.min.css" />
     <Content Include="link\core.css" />
+    <Content Include="link\views\index.css" />
     <Content Include="require.js" />
     <Content Include="require.min.js" />
     <Content Include="README.md" />
@@ -156,9 +157,7 @@
     <TypeScriptCompile Include="usage\v2\v2kitStatic.Rsm.d.ts" />
     <TypeScriptCompile Include="usage\v2\v2kitStatic.Tool.d.ts" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="link\views\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
