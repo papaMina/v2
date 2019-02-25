@@ -64,6 +64,7 @@
     <Content Include="js\components\v2.datePicker.js" />
     <Content Include="js\components\v2.input.js" />
     <Content Include="js\components\v2.inputGroup.js" />
+    <Content Include="js\components\v2.popover.js" />
     <Content Include="js\lib\ajax\axios.js" />
     <Content Include="js\lib\ajax\axios.min.js" />
     <Content Include="link\common.css" />
@@ -79,6 +80,7 @@
     <Content Include="link\lib\bootstrap\bootstrap.css" />
     <Content Include="link\lib\bootstrap\bootstrap.min.css" />
     <Content Include="link\core.css" />
+    <Content Include="link\views\index.css" />
     <Content Include="require.js" />
     <Content Include="require.min.js" />
     <Content Include="README.md" />
@@ -92,6 +94,7 @@
     <Content Include="link\lib\fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="link\lib\fonts\glyphicons-halflings-regular.woff" />
     <Content Include="link\lib\fonts\glyphicons-halflings-regular.woff2" />
+    <Content Include="link\components\v2.popover.css" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -156,9 +159,7 @@
     <TypeScriptCompile Include="usage\v2\v2kitStatic.Rsm.d.ts" />
     <TypeScriptCompile Include="usage\v2\v2kitStatic.Tool.d.ts" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="link\views\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

@@ -4,23 +4,28 @@
     <meta charset="utf-8" />
     <title>测试用例</title>
     <link href="link/common.css" rel="stylesheet" />
+    <script src="js/lib/ajax/axios.js"></script>
     <script data-main="js/appsettings" src="/require.js"></script>
+    <style>
+        .popovers {        
+           padding:10px;
+            width:80px;
+            background-color:pink;
+            margin:auto;
+        }
+    </style>
 </head>
 <body>
     <div id="app">
-        <yep-button-group buttons="buttons">
-        </yep-button-group>
-        <yep-button class="btn-danger" message="测试" @click="alert(text)"></yep-button>
+
     </div>
     <div class="ui ui-entry">1</div>
     <div class="ui ui-entry">2</div>
     <div class="ui ui-series">
         <div class="ui ui-entry">1</div>
         <div class="ui ui-entry">2</div>
-        <fieldset>
-            <
-        </fieldset>
-        <input placeholder="" required="" name="" pattern="" type="datetime-local"/>
+        <fieldset></fieldset>
+        <input placeholder="" required="" name="" pattern="" type="datetime-local" />
         <textarea></textarea>
     </div>
     <div class="ui  ui-series ui-compose ui-horizontal">
@@ -72,6 +77,31 @@
             </div>
         </div>
     </div>
+    <div class="popovers" id="popovers" aria-describedby="popover">
+        大苏打撒旦
+    </div>
+    <!--<div class="popover fade bottom in" role="tooltip" style="top:546px;left:562px;display: block;">
+        <div class="arrow" style="left: 50%;">
+        </div>
+        <h3 class="popover-title">Popover title</h3>
+        <div class="popover-content">底部的 Popover 中的一些内容</div>
+    </div>--> 
     <button id="test-group" class="btn-group"></button>
+    <script>
+        //var i = 0;
+        //var box=document.getElementById('popovers');
+        //var popoverH = window.getComputedStyle(box).height;
+        //var popoverW = window.getComputedStyle(box).width;
+        //var id=parseInt(Math.random() * 10000, 10) + 1
+        //box.setAttribute("aria-describedby", "popover" + id);
+        ////var popoverId = box.getAttribute("aria-describedby");
+
+        //console.log("左偏移：" + box.offsetLeft);
+        //console.log("上偏移：" +box.offsetTop);
+        //console.log("高："+popoverH);
+        //console.log("宽：" + popoverW);
+
+
+    </script>
 </body>
 </html>

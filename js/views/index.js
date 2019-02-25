@@ -25,24 +25,24 @@ console.log(v2.StringCb(13, "{a}+{b}+【`${for(var v<k> in .){ if(v>1){ $'参数
 
 var timestamp = +new Date();
 
-//var x = v2("inputEditV2", {
-//    name: "单位名称1",
-//    show: true,
-//    access: true,
-//    ajax: function () {
-//        //this.base.commit();
-//    },
-//    "hide(access,limit)": function (access, limit) {
-//        this.base.hide();
-//    },
-//    commit: function () {
-//        console.log("commit");
-//    }
-//});
 
-define(function (require) {
-    timestamp = +new Date();
-    var button = require('components/v2.button');
+var apis = {/* API */
+    login: ''
+};
+var globals = {/* 全局变量 */
+
+};
+var methods = {/* 全局方法 */
+
+};
+
+require(["vue", 'components/v2.button', 'components/v2.buttonGroup', 'components/v2.input', 'components/v2.popover'], function (Vue, button, buttonGroup, input, popover) {/* 引用库、插件 */
+    popover({
+        patternId: "popovers",
+        direction: "bottom",
+        title: "新的",
+        content: "测试123456"
+    });
     button({
         dropdown: true,
         addClass: 'btn-primary',
@@ -71,7 +71,6 @@ define(function (require) {
             }
         }
     });
-    console.log(i);
     var i = input({
         name: '测试',
         type: 'checkbox',
@@ -103,10 +102,6 @@ define(function (require) {
             }
         }
     });
-    var buttonGroup = require('components/v2.buttonGroup');
-    //console.log(+new Date() - timestamp);
-    //var button = require('packages/v2.button');
-    console.log(+new Date() - timestamp);
     var v = buttonGroup({
         $: '#test-group',
         data: {
@@ -140,19 +135,9 @@ define(function (require) {
             }
         }
     });
-    console.log(v);
-    console.log(+new Date() - timestamp);
-    //var x = require('components/yep-button');
-    //var x = require('components/yep-button-group');
-    //new Vue({
-    //    el: '#app',
-    //    data: {
-    //        buttons: [{ message: "测试1" }, { message: "测试2" }]
-    //    }
-    //});
+    var vm = new Vue({
+
+        el: "#app"
+
+    })
 });
-console.log(+new Date() - timestamp);
-
-var html = v2.htmlSerialize("#content_views[name='test'] > ((h1{H1测试}*5>span{$})+h2{H2测试}*2>.nav*5{nav$})+ul>li{$}*10");
-
-console.log(html);
