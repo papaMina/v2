@@ -1,0 +1,167 @@
+﻿.date-picker-icon {
+    border: 1px solid #B1D2EC;
+}
+
+.date-picker,
+.date-picker-ym,
+.date-picker-ym .date-picker-yms,
+.date-picker-container,
+.date-picker-container td,
+.date-picker-footer .date-picker-hms,
+.date-picker-hms-c,
+.date-picker-footer .date-picker-btn a {
+    border: 1px solid #B1D2EC;
+}
+
+    .date-picker-y .date-picker-yms a,
+    .date-picker-choose,
+    .date-picker-container thead {
+        background-color: #DEECF8;
+    }
+
+    .date-picker-box,
+    .date-picker-ym .date-picker-yms,
+    .date-picker-hms-c {
+        box-shadow: 2px 2px 5px rgba(0,0,0,.1);
+    }
+
+.date-picker-box {
+    border-top: none;
+    border-bottom: none;
+    background-color: #fff;
+    color: #1F547E;
+}
+
+    .date-picker-box input {
+        color: #1F547E;
+    }
+
+    .date-picker-box .date-picker-void {
+        color: #BDD8EE !important;
+    }
+
+        .date-picker-box .date-picker-void:hover {
+            background-color: #fff !important
+        }
+
+    .date-picker-box a, .date-picker-box a:hover {
+        color: #1F547E;
+    }
+
+.date-picker .active {
+    background-color: #DEECF8 !important;
+}
+
+.date-picker-header {
+    border-top: 1px solid #B1D2EC;
+}
+
+.date-picker-ym .date-picker-yms {
+    background-color: #fff;
+}
+
+.date-picker-y .date-picker-yms a {
+    border-bottom: 1px solid #B1D2EC;
+}
+
+.date-picker-y .date-picker-yms .date-picker-chdown {
+    border-top: 1px solid #B1D2EC;
+    border-bottom: none;
+}
+
+.date-picker-y .date-picker-yms ul li:hover,
+.date-picker-m .date-picker-yms span:hover {
+    color: #000;
+}
+
+.date-picker-choose {
+    border-left: 1px solid #B1D2EC;
+}
+
+.date-picker-chprev {
+    border-left: none;
+    border-right: 1px solid #B1D2EC;
+}
+
+.date-picker-chtop cite {
+    border-bottom-color: #3081C2;
+}
+
+.date-picker-chdown cite, .date-picker-ym label {
+    border-top-color: #3081C2;
+}
+
+.date-picker-chprev cite {
+    border-right-style: solid;
+    border-right-color: #3081C2;
+}
+
+.date-picker-chnext cite {
+    border-left-style: solid;
+    border-left-color: #3081C2;
+}
+
+.date-picker-container td {
+    background-color: #fff;
+    color: #1F547E;
+}
+
+.date-picker-container .besides {
+    color: #60A2D7;
+}
+
+.date-picker-container thead {
+    color: #163A58;
+}
+
+.date-picker-footer {
+    border-bottom: 1px solid #B1D2EC;
+}
+
+    .date-picker-footer .date-picker-hms {
+        background-color: #fff;
+    }
+
+.date-picker-hms-c {
+    background-color: #fff;
+}
+
+.date-picker-footer .date-picker-sj {
+    border-right: 1px solid #B1D2EC;
+    background-color: #ECF4FB;
+}
+
+.date-picker-footer input {
+    background-color: #fff;
+}
+
+.date-picker-footer .laydte-hsmtex {
+    border-bottom: 1px solid #B1D2EC;
+}
+
+.date-picker-footer .date-picker-btn {
+    border-right: 1px solid #B1D2EC;
+}
+
+.date-picker-footer .date-picker-v {
+    color: #75AEDD
+}
+
+.date-picker-footer .date-picker-btn a {
+    border-right: none;
+    background-color: #ECF4FB;
+}
+
+    .date-picker-footer .date-picker-btn a:hover {
+        background-color: #fff;
+    }
+
+.date-picker-y .date-picker-yms ul li:hover,
+.date-picker-m .date-picker-yms span:hover,
+.date-picker-choose:hover,
+.date-picker-y .date-picker-yms a:hover,
+.date-picker-container td:hover,
+.date-picker-footer .date-picker-hms-c span:hover,
+.date-picker-footer .laydte-hsmtex {
+    background-color: #ECF4FB
+}

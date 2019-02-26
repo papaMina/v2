@@ -1,2 +1,4 @@
 ﻿@import 'core.css';
 @import 'components/v2.input.css';
+@import 'components/v2.datePicker.css';
+@import'components/skins/defaults/v2.datePicker.css';
