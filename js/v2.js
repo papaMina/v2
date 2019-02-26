@@ -870,7 +870,7 @@
         },
         usb: function () {
             var my = this,
-                visible = !!this.visible,
+                visible = !this.visible,
                 showClass = rinlineTag.test(this.$.nodeName) ? 'show-inline' : 'show';
             this.define('disabled', function (value) {
                 this.toggleClass('disabled', !!value);

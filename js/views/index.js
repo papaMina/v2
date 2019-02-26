@@ -39,7 +39,7 @@ var methods = {/* 全局方法 */
 require(["vue", 'components/v2.button', 'components/v2.buttonGroup', 'components/v2.input', 'components/v2.popover'], function (Vue, button, buttonGroup, input, popover) {/* 引用库、插件 */
     popover({
         $touch: document.getElementById('popovers'),
-        direction: "bottom",
+        direction: "top",
         title: "新的",
         content: "测试123456"
     });
