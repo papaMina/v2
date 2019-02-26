@@ -1,13 +1,23 @@
 ﻿define(function (require) {
-    var date = require('v2.tool');
     var takeObj = {
         $hour: '.date-hour',
         $minute: '.date-minute',
         $sec: '.date-sec',
+        $timePicker: '.date-picker-hms-c',
         $clear: '.date-clear',
         $now: '.date-now',
         $ok: '.date-ok'
     };
+    function isLeapYear(y) {
+        return (y % 400 == 0) || (y % 4 == 0) && (y % 100 > 0);
+    }
+    function dayCount(y, m) {
+        if (m === 2) return isLeapYear(y) ? 29 : 28;
+        return (m % 2 == 0 ? m < 7 : m > 8) ? 30 : 31;
+    }
+    function zoreFill(a) {
+        return a ? a > 9 ? a : '0' + a : '00';
+    }
     var rinputTag = /textarea|input/i;
     v2.use("date-picker", {
         datePicker: function () {
@@ -20,7 +30,7 @@
             this.maxGb = "2099-12-31 23:59:59";
 
             /** 最小时间限制 */
-            this.min = date.format();
+            this.min = '';
             /** 最大时间限制 */
             this.max = '';
 
@@ -37,20 +47,25 @@
             this.week = ["日", "一", "二", "三", "四", "五", "六"];
 
             /** 格式化字符串 */
-            this.format = 'yyyy-MM-dd';
+            this.format = 'yyyy-MM-dd HH:mm:ss';
         },
         render: function () {
             this.base.render();
             this.addClass('date-picker');
 
             if (this.showYmd = /y|M|d/.test(this.format)) {
-                var ym = '(a.laydate_choose.laydate_chprev.laydate_tab>cite)+input[readonly]+label+(a.laydate_choose.laydate_chnext.laydate_tab>cite)';
-                this.append(v2.htmlSerialize('.date-picker-header>(.date-y>' + ym + '+.laydate_yms>(a.laydate_tab.laydate_chtop>cite)+(ul.laydate_ys.hidden>li*14)+(a.laydate_tab.laydate_chdown>cite))+.date_m>' + ym + '+.laydate_yms.hidden>span[m="$"]{$=>{$>9?$:"0$"}}*12'))
-                    .append(v2.htmlSerialize('table.laydate_table>(thead>tr>`${for(var item<index> in week){ if(index>0){ @"+th{{item}}" }else{ @"th{{item}}" }}}`)+tbody>(tr>td*7)*6'.forCb(this)));
-                this.$year = this.take('.date-y>input');
-                this.$month = this.take('.date_m>input');
+                var ym = '(a.date-picker-choose.date-picker-chprev.date-picker-tab>cite)+input[readonly]+label+(a.date-picker-choose.date-picker-chnext.date-picker-tab>cite)';
+                this.append(v2.htmlSerialize('.date-picker-header>(.date-picker-y.date-picker-ym>' + ym + '+.date-picker-yms.hidden>(a.date-picker-tab.date-picker-chtop>cite)+(ul.date-picker-ys>li*14)+(a.date-picker-tab.date-picker-chdown>cite))+.date-picker-ym.date-picker-m>' + ym + '+.date-picker-yms.hidden>span[m="$"]{$=>{$>9?$:"0$"}}*12'))
+                    .append(v2.htmlSerialize('table.date-picker-container>(thead>tr>`${for(var item<index> in week){ if(index>0){ @"+th{{item}}" }else{ @"th{{item}}" }}}`)+tbody>(tr>td*7)*6'.forCb(this)));
 
-                this.$years = this.when('ul.laydate_ys');
+                this.$year = this.take('.date-picker-y>input');
+                this.$month = this.take('.date-picker-m>input');
+
+                this.$yearPicker = this.take('.date-picker-y>.date-picker-yms');
+
+                this.$monthPicker = this.take('.date-picker-m>.date-picker-yms');
+
+                this.$years = this.when('ul.date-picker-ys');
 
                 this.$days = this.when('tbody')
                     .map(function (tr) {
@@ -60,7 +75,7 @@
 
             this.showHms = /H|h|m|s/.test(this.format);
 
-            this.append(v2.htmlSerialize('.laydate_bottom>(ul.laydate_hms{showHms!".hidden"}>li.laydate_sj{{timeExplain}}+(li>input.date-hour[readonly]+span{:})+(li>input.date-minute[readonly]+span{:})+(li>input.date-sec[readonly]))+.date-time+date-btn>a.date-clear{{clearExplain}}+a.date-now{{nowExplain}}+a.date-ok{{okExplain}}'.compileCb(this)));
+            this.append(v2.htmlSerialize('.date-picker-footer>(ul.date-picker-hms{showHms!".hidden"}>li.date-picker-sj{{timeExplain}}+(li>input.date-hour[readonly]+span{:})+(li>input.date-minute[readonly]+span{:})+(li>input.date-sec[readonly]))+.date-picker-hms-c.hidden+.date-picker-btn>a.date-clear{{clearExplain}}+a.date-now{{nowExplain}}+a.date-ok{{okExplain}}'.compileCb(this)));
 
             for (var i in takeObj) {
                 this[i] = this.take(takeObj[i]);
@@ -89,37 +104,53 @@
                         ),
                 (e || check) ? e : [];
         },
-        timeVoid: function () {
-
+        timeVoid: function (value, hms/*0:时,1:分，2:秒*/) {
+            return this.ymd[0] == this.mins[0] && this.ymd[1] + 1 == this.mins[1] && this.ymd[2] == this.mins[2] && this.mins[3 + hms] > value ||
+                this.ymd[0] == this.maxs[0] && this.ymd[1] + 1 == this.maxs[1] && this.ymd[2] == this.maxs[2] && value > this.maxs[3 + hms] ||
+                value > (hms ? 59 : 23)
         },
         dayRender: function () {
-            var ymd = this.value.match(/\d+/g);
-            if (!ymd || ymd.length < 3) {
+            var date, ymd = this.value.match(/\d+/g);
+            if (!ymd || this.showYmd && ymd.length < 3) {
                 ymd = this.min.match(/\d+/g);
             }
-            if (!ymd || ymd.length < 3) {
-                var date = new Date();
-                ymd = [date.getFullYear(), date.getMonth() + 1, date.getDate()];
+            if (!ymd || this.showYmd && ymd.length < 3) {
+                date = new Date();
+                ymd = [date.getFullYear(), date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds()];
             }
-            this.ymd = ymd;
-            this.day(ymd[0], ymd[1] - 1, ymd[2]);
+            if (this.showYmd) {
+                this.day(ymd[0], ymd[1] - 1, ymd[2]);
+                this.time(ymd[3], ymd[4], ymd[5]);
+            } else if (this.showHms) {
+                if (!ymd) {
+                    date = new Date();
+                    ymd = [date.getHours(), date.getMinutes(), date.getSeconds()];
+                }
+                this.time(ymd[0], ymd[1], ymd[2]);
+            }
+        },
+        time: function (h, m, s) {
+            if (this.showHms) {
+                this.$hour.value = zoreFill(h);
+                this.$minute.value = zoreFill(m);
+                this.$sec.value = zoreFill(s);
+            }
         },
         day: function (y, m, d) {
-
             y < (0 | this.mins[0]) && (y = 0 | this.mins[0]);
             y > (0 | this.maxs[0]) && (y = 0 | this.maxs[0]);
             var my = this, g = new Date(y, m, d), gb = {};
             gb.ymd = [g.getFullYear(), g.getMonth(), g.getDate()];
             g.setFullYear(gb.ymd[0], gb.ymd[1], 1);
-            gb.FDay = g.getDay() - 1;
-            gb.PDays = date.dayCount(y, m);
+            gb.FDay = g.getDay();
+            gb.PDays = dayCount(y, m);
             gb.PDay = gb.PDays - gb.FDay + 1;
-            gb.NDays = date.dayCount(y, m + 1);
+            gb.NDays = dayCount(y, m + 1);
             gb.NDay = 1;
             this.$days.then(function (n, i) {
                 var y = gb.ymd[0], m = gb.ymd[1] + 1, d;
                 if (i < gb.FDay) {
-                    n.className = 'pre-date';
+                    n.className = 'besides';
                     n.innerHTML = d = gb.PDay + i;
                     if (m === 1) {
                         y -= 1;
@@ -128,7 +159,7 @@
                         m -= 1;
                     }
                 } else if (i >= (gb.FDay + gb.NDays)) {
-                    n.className = 'next-date';
+                    n.className = 'besides';
                     n.innerHTML = d = gb.NDay++;
                     if (m === 12) {
                         m = 1;
@@ -153,6 +184,8 @@
                 n.setAttribute('d', d);
             });
             this.valid = !v2.hasClass(gb.day, 'disabled');
+            this.$year.value = y;
+            this.$month.value = m + 1;
         },
         usb: function () {
             this.base.usb();
@@ -165,7 +198,11 @@
                     return rinputTag.test(elem.tagName) ? elem.value : elem.innerHTML;
                 },
                 set: function (value) {
-                    value = date.format(value, this.format);
+                    var ymd = value.match(/d+/g);
+                    value = this.format.replace(/yyyy|MM|dd|HH|mm|ss/g,
+                        function () {
+                            return ymd.index = 0 | ++ymd.index, zoreFill(ymd[ymd.index]);
+                        });
                     if ('value' in this.$touch) {
                         return this.$touch.value = value;
                     }
@@ -179,16 +216,29 @@
         },
         commit: function () {
             var my = this;
-            this.base.commit();
-            this.on('click', '[data-index]:not(.disabled)', function () {
-                my.selectedIndex = +v2.attr(this, 'data-index');
-            });
-            this.$master.on('click', function () {
-                my.$touch.toggleClass('open');
-                return false;
-            });
-            v2.on(document, 'click', function () {
-                my.$touch.removeClass('open');
+            if (this.showYmd) {
+                this.onAt(this.$year, 'click', function () {
+                    this.addClassAt(this.$monthPicker, 'hidden')
+                        .removeClassAt(this.$yearPicker, 'hidden');
+                    return false;
+                }).onAt(this.$month, 'click', function () {
+                    this.addClassAt(this.$yearPicker, 'hidden')
+                        .removeClassAt(this.$monthPicker, 'hidden');
+                    return false;
+                });
+            }
+            if (this.showHms) {
+                this.onAt(this.$hour, '$click', function () {
+                    v2.removeClass(this.$timePicker, 'hidden');
+                }).onAt(this.$minute, '$click', function () {
+                    v2.removeClass(this.$timePicker, 'hidden');
+                }).onAt(this.$sec, '$click', function () {
+                    v2.removeClass(this.$timePicker, 'hidden');
+                });
+            }
+            this.on('$click', function () {
+                this.addClassAt(my.$yearPicker, 'hidden')
+                    .addClassAt(my.$monthPicker, 'hidden');
             });
         }
     });

@@ -67,6 +67,7 @@
     <Content Include="js\lib\ajax\axios.js" />
     <Content Include="js\lib\ajax\axios.min.js" />
     <Content Include="link\common.css" />
+    <Content Include="link\components\skins\defaults\v2.datePicker.css" />
     <Content Include="link\components\v2.datePicker.css" />
     <Content Include="link\components\v2.input.css" />
     <Content Include="link\lib\fonts\glyphicons-halflings-regular.svg" />
