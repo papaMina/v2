@@ -6,40 +6,56 @@
             /*在父级的哪个方向*/
             this.direction = "bottom";
             /*标题*/
-            this.title = "提示";
+            this.title = null;
             /*内容*/
             this.content = null;
-            /*弹出框id*/
-            this.id = parseInt(Math.random() * 10000, 10) + 1;
         },
         render: function () {
-            console.log(this.id);
             this.base.render();
-            this.append(v2.htmlSerialize('div#{id}.popover.fade.{direction}.in>div.arrow>h3.popover-title{{title}}+div.popover-content{{content}}'.withCb(this)));            
+            this.addClass("popover");
+            this.addClass("fade");
+            this.addClass(this.direction);
+            this.addClass("in");
+            if (this.title) {
+                this.append(v2.htmlSerialize('h3.popover-title{{title}}'.withCb(this)));
+            }
+            this.append(v2.htmlSerialize('.arrow+.popover-content{{content}}'.withCb(this)));
+
         },
         resolve: function () {
-            //console.log(this.id);
             this.cssAt
-            var elem = this.$touch.$ || this.$touch;
-            //console.log(elem);
-            var pWidth = this.cssAt(elem, "width");
-            var pHeight = this.cssAt(elem, "height");
-            var pLeft = this.propAt(elem, "offsetLeft");
-            var pTop = this.propAt(elem, "offsetTop");
-            pTop
-            console.log(a);
-            //elem
-            //var box = document.getElementById(this.patternId);
-            //var id = parseInt(Math.random() * 10000, 10) + 1
-            //box.setAttribute("aria-describedby", "popover" + this.id);
-            //var boxStyle = window.getComputedStyle(box);
-            //var popoverH = boxStyle.height;
-            //var popoverW = boxStyle.width;
-            //var left = box.offsetLeft;
-            //var top = box.offsetTop;
-            //var popoverH = top + popoverH;//top
-            //var popoverH = top + popoverH;
-
+            var elem = this.$touch.$ || this.$touch;//父级
+            var pWidth = this.propAt(elem, "offsetWidth"),//父级 宽
+                pHeight = this.propAt(elem, "offsetHeight"),//父级 高
+                pLeft = this.propAt(elem, "offsetLeft"),//父级 左偏移
+                pTop = this.propAt(elem, "offsetTop"), //父级 上偏移
+                cWidth = this.prop("offsetWidth"),//提示框 宽
+                cHeight = this.prop("offsetHeight"),//提示框 高
+                top, left;//设置上，左偏移
+            switch (this.direction) {
+                case 'bottom':
+                    top = pHeight + pTop;
+                    left = pLeft + pWidth / 2 - cWidth / 2;
+                    break;
+                case 'top':
+                    top = pTop - cHeight;
+                    left = pLeft + pWidth / 2 - cWidth / 2;
+                    break;
+                case 'left':
+                    left = pLeft - cWidth;
+                    top = pTop + pHeight / 2 - cHeight / 2;
+                    break;
+                case 'right':
+                    left = pLeft + pWidth;
+                    top = pTop + pHeight / 2 - cHeight / 2;
+                    break;
+                default:
+                    this.addClass('bottom');
+                    top = pHeight + pTop;
+                    left = pLeft + pWidth / 2 - cWidth / 2;
+                    break;
+            }
+            this.css({ top: top, left: left });
         },
     });
     return function (options) {

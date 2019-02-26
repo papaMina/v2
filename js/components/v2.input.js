@@ -168,7 +168,7 @@
             this.validityError = null;
         },
         init: function () {
-            this.base.init(this.type === 'radio' || this.type === 'checkbox' ? 'label' : this.multiple ? 'textarea' : 'input');
+            this.base.init((this.type === 'radio' || this.type === 'checkbox') ? 'label' : this.multiple ? 'textarea' : 'input');
         },
         checkValidity: function () {
             return this.validitySurpport ? this.$core.checkValidity() : this.validity.isValid();
