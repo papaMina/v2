@@ -2662,6 +2662,9 @@
     var rclass = /[\t\r\n]/g,
         rcssText = /^([+-/*]=)?([+-]?(?:[0-9]+\.)?[0-9]+)/i;
     v2.use({
+        access: function (fn, args) {
+            return fn.apply(this, [this.$].concat(core_slice.slice(args)));
+        },
         hasClass: function (value) {
             return this.hasClassAt(this.$, value);
         },
@@ -2718,14 +2721,14 @@
         domManip: function (args, table, callback) {
             return v2.domManip(this.$, args, table, callback);
         },
-        '{css': function (name, value) {
-            return this.cssAt(this.$, name, value);
+        '{css': function () {
+            return this.access(this.cssAt, arguments);
         },
-        '{attr': function (name, value) {
-            return this.attrAt(this.$, name, value);
+        '{attr': function () {
+            return this.access(this.attrAt, arguments);
         },
-        '{prop': function (name, value) {
-            return this.propAt(this.$, name, value);
+        '{prop': function () {
+            return this.access(this.propAt, arguments);
         },
         cssAt: function (elem, name, value) {
             return access(this, function (elem, name, value) {
@@ -2743,7 +2746,7 @@
                 return value === undefined ?
                     v2.css(elem, name) :
                     v2.style(elem, name, value);
-            }, name, value, elem, arguments.length > 1);
+            }, name, value, elem, arguments.length > 2);
         },
         attrAt: function (elem, name, value) {
             return access(this, function (elem, name, value) {
@@ -2757,7 +2760,7 @@
                     return map;
                 }
                 return v2.attr(elem, name, value);
-            }, name, value, elem, arguments.length > 1);
+            }, name, value, elem, arguments.length > 2);
         },
         propAt: function (elem, name, value) {
             return access(this, function (elem, name, value) {
@@ -2771,16 +2774,16 @@
                     return map;
                 }
                 return v2.prop(elem, name, value);
-            }, name, value, elem, arguments.length > 1);
+            }, name, value, elem, arguments.length > 2);
         }
     });
 
     v2.each("on off".split(' '), function (name) {
-        v2.fn[name] = function (type, selector, fn) {
-            return this[name + 'At'](this.$, type, selector, fn);
+        v2.fn[name] = function () {
+            return this.access(this[name + 'At'], arguments);
         };
         v2.fn[name + 'At'] = function (elem, type, selector, fn) {
-            if (fn === undefined) {
+            if (arguments.length < 4) {
                 fn = selector;
                 selector = undefined;
             }
