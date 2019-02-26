@@ -2663,7 +2663,7 @@
         rcssText = /^([+-/*]=)?([+-]?(?:[0-9]+\.)?[0-9]+)/i;
     v2.use({
         access: function (fn, args) {
-            return fn.apply(this, [this.$].concat(core_slice.slice(args)));
+            return fn.apply(this, [this.$].concat(core_slice.call(args, 0)));
         },
         hasClass: function (value) {
             return this.hasClassAt(this.$, value);
