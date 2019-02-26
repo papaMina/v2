@@ -226,7 +226,6 @@
             this.dayRender();
         },
         commit: function () {
-            var my = this;
             if (this.showYmd) {
                 this.onAt(this.$year, '$click', function () {
                     this.addClassAt(this.$monthPicker, 'hidden')
@@ -248,8 +247,8 @@
                 });
             }
             this.on('$click', function () {
-                this.addClassAt(my.$yearPicker, 'hidden')
-                    .addClassAt(my.$monthPicker, 'hidden');
+                this.addClassAt(this.$yearPicker, 'hidden')
+                    .addClassAt(this.$monthPicker, 'hidden');
             });
         }
     });
