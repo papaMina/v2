@@ -374,6 +374,9 @@
         rstandardTag = /^<([\w-]+)|<\/([\w-]+)>$/g,
         rinject = new RegExp("^" + whitespace + "*(" + word + ")\\(((" + whitespace + "*" + word + whitespace + "*,)*" + whitespace + "*" + word + ")?" + whitespace + "*\\)" + whitespace + "*$", "i");
 
+    var inlineTag = "a|abbr|acronym|b|bdo|big|br|cite|code|dfn|em|font|i|img|input|kbd|label|q|s|samp|select|small|span|strike|strong|sub|sup|textarea|tt|u|var";
+    var rinlineTag = new RegExp('^' + inlineTag + "$");
+
     function dependencyInjection(context, key, inject, value) {
         if (!inject) return value;
         var callback, baseArgs, args = [], injections = inject.match(rword);
@@ -866,7 +869,9 @@
             this.switchCase();
         },
         usb: function () {
-            var my = this, visible = !!this.visible;
+            var my = this,
+                visible = !!this.visible,
+                showClass = rinlineTag.test(this.$.nodeName) ? 'show-inline' : 'show';
             this.define('disabled', function (value) {
                 this.toggleClass('disabled', !!value);
             }).define('visible', {
@@ -875,7 +880,19 @@
                 },
                 set: function (value) {
                     if (visible === !value) {
-                        my.toggleClass('hidden', !(visible = !!value));
+                        if (visible = !!value) {
+                            if (my.hasClass('hide')) {
+                                my.removeClass('hide');
+                            } else {
+                                my.addClass(showClass);
+                            }
+                        } else {
+                            if (my.hasClass(showClass)) {
+                                my.removeClass(showClass);
+                            } else {
+                                my.addClass('hide');
+                            }
+                        }
                     }
                 }
             }, true);
@@ -2763,7 +2780,7 @@
             return this[name + 'At'](this.$, type, selector, fn);
         };
         v2.fn[name + 'At'] = function (elem, type, selector, fn) {
-            if (arguments.length < 4) {
+            if (fn === undefined) {
                 fn = selector;
                 selector = undefined;
             }

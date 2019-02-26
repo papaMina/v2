@@ -73,9 +73,15 @@
                     });
             }
 
-            this.showHms = /H|h|m|s/.test(this.format);
+            this.showHour = /H|h/.test(this.format);
 
-            this.append(v2.htmlSerialize('.date-picker-footer>(ul.date-picker-hms{showHms!".hidden"}>li.date-picker-sj{{timeExplain}}+(li>input.date-hour[readonly]+span{:})+(li>input.date-minute[readonly]+span{:})+(li>input.date-sec[readonly]))+.date-picker-hms-c.hidden+.date-picker-btn>a.date-clear{{clearExplain}}+a.date-now{{nowExplain}}+a.date-ok{{okExplain}}'.compileCb(this)));
+            this.showMinute = /m/.test(this.format);
+
+            this.showSec = /s/.test(this.format);
+
+            this.showHms = this.showHour || this.showMinute || this.showSec;
+
+            this.append(v2.htmlSerialize('.date-picker-footer>(ul.date-picker-hms{showHms!".hidden"}>li.date-picker-sj{{timeExplain}}+(li>input.date-hour{showHour!".hidden"}[readonly]+span{:})+(li>input.date-minute{showMinute!".hidden"}[readonly]+span{:})+(li>input.date-sec{showSec!".hidden"}[readonly]))+.date-picker-hms-c.hidden+.date-picker-btn>a.date-clear{{clearExplain}}+a.date-now{{nowExplain}}+a.date-ok{{okExplain}}'.compileCb(this)));
 
             for (var i in takeObj) {
                 this[i] = this.take(takeObj[i]);
