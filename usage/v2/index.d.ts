@@ -80,6 +80,13 @@
         */
         hasClass(value: string): boolean,
         /**
+        * 控件主元素是否包含名为“value”的类名
+        * @param elem 元素
+        * @param value 类名
+        * @returns 是否包含类名。
+        */
+        hasClassAt(elem: Element, value: string): boolean,
+        /**
          * 添加类名
          * @param value 类名
          */
@@ -89,6 +96,12 @@
          * @param value 类名(多个时，用空格分开)
          */
         removeClass(value: string): V2Control,
+        /**
+         * 移除类名
+         * @param elem 元素
+         * @param value 类名(多个时，用空格分开)
+         */
+        removeClassAt(elem: Element, value: string): V2Control,
         /**
          * 如果主元素包含名为“value”的类名，则移除该类名，否则添加该类名。
          * @param value 类名
@@ -101,54 +114,85 @@
          */
         toggleClass(value: string, toggle: boolean): V2Control,
         /**
+         * 如果主元素包含名为“value”的类名，则移除该类名，否则添加该类名。
+         * @param elem 元素
+         * @param value 类名
+         */
+        toggleClassAt(elem: Element, value: string): V2Control,
+        /**
+         * 如果“toggle”为true，向主元素添加类名“value”，否则移除类名“value”。
+         * @param elem 元素
+         * @param value 类名
+         * @param toggle 开关
+         */
+        toggleClassAt(elem: Element, value: string, toggle: boolean): V2Control,
+        /**
          * 获取style属性值
          * @param name style属性名称
-         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        css(name: string, elem?: Element): number | string,
+        css(name: string): number | string,
         /**
          * 获取style属性值
          * @param name style属性名称数组集合
-         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        css(name: Array<string>, elem?: Element): PlainObject,
+        css(name: Array<string>): PlainObject,
         /**
          * 设置style属性值
          * @param name style属性名称和属性值对象
-         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        css(name: PlainObject, elem?: Element): V2Control,
+        css(name: PlainObject): V2Control,
         /**
          * 设置style属性值
          * @param name 属性名称
          * @param value 属性值
-         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        css(name: string, value: any, elem?: Element): V2Control,
+        css(name: string, value: any): V2Control,
+        /**
+         * 获取style属性值
+         * @param elem 元素
+         * @param name style属性名称
+         */
+        cssAt(elem: Element, name: string): number | string,
+        /**
+         * 获取style属性值
+         * @param elem 元素
+         * @param name style属性名称数组集合
+         */
+        cssAt(elem: Element, name: Array<string>): PlainObject,
+        /**
+         * 设置style属性值
+         * @param elem 元素
+         * @param name style属性名称和属性值对象
+         */
+        cssAt(elem: Element, name: PlainObject): V2Control,
+        /**
+         * 设置style属性值
+         * @param elem 元素
+         * @param name 属性名称
+         * @param value 属性值
+         */
+        cssAt(elem: Element, name: string, value: any): V2Control,
         /**
          * 获取属性值
          * @param name 属性名称
-         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        attr(name: string, elem?: Element): any,
+        attr(name: string): any,
         /**
          * 获取属性值
          * @param name 属性名称数组
-         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        attr(name: Array<string>, elem?: Element): PlainObject,
+        attr(name: Array<string>): PlainObject,
         /**
          * 设置属性值
          * @param name 包含属性名称和属性值的对象
-         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        attr(name: PlainObject, elem?: Element): V2Control,
+        attr(name: PlainObject): V2Control,
         /**
          * 设置属性值
          * @param name 属性名称
          * @param value 属性值
          */
-        attr(name: string, value: string, elem?: Element): V2Control,
+        attr(name: string, value: string): V2Control,
         /**
          * 移除属性
          * @param value 属性名称(多个时，用空格分开)
@@ -156,34 +200,92 @@
         removeAttr(value: string): V2Control,
         /**
          * 获取属性值
+         * @param elem 元素
          * @param name 属性名称
-         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        prop(name: string, elem?: Element): any,
+        attrAt(elem: Element, name: string): any,
+        /**
+         * 获取属性值
+         * @param elem 元素
+         * @param name 属性名称数组
+         */
+        attrAt(elem: Element, name: Array<string>): PlainObject,
+        /**
+         * 设置属性值
+         * @param elem 元素
+         * @param name 包含属性名称和属性值的对象
+         */
+        attrAt(elem: Element, name: PlainObject): V2Control,
+        /**
+         * 设置属性值
+         * @param elem 元素
+         * @param name 属性名称
+         * @param value 属性值
+         */
+        attrAt(elem: Element, name: string, value: string): V2Control,
+        /**
+         * 移除属性
+         * @param elem 元素
+         * @param value 属性名称(多个时，用空格分开)
+         */
+        removeAttrAt(elem: Element, value: string): V2Control,
+        /**
+         * 获取属性值
+         * @param name 属性名称
+         */
+        prop(name: string): any,
         /**
          * 获取属性值
          * @param name 属性名称数组
-         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        prop(name: Array<string>, elem?: Element): PlainObject,
+        prop(name: Array<string>): PlainObject,
         /**
          * 设置属性值
          * @param name 包含属性名称和属性值的对象
-         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        prop(name: PlainObject, elem?: Element): V2Control,
+        prop(name: PlainObject): V2Control,
         /**
          * 设置属性值
          * @param name 属性名称
          * @param value 属性值
-         * @param elem 指定设置的元素（默认为控件主元素）
          */
-        prop(name: string, value: any, elem?: Element): V2Control,
+        prop(name: string, value: any): V2Control,
         /**
          * 移除属性
          * @param value 属性名称(多个时，用空格分开)
          */
         removeProp(value: string): V2Control,
+        /**
+         * 获取属性值
+         * @param elem 元素
+         * @param name 属性名称
+         */
+        propAt(elem: Element, name: string): any,
+        /**
+         * 获取属性值
+         * @param elem 元素
+         * @param name 属性名称数组
+         */
+        propAt(elem: Element, name: Array<string>): PlainObject,
+        /**
+         * 设置属性值
+         * @param elem 元素
+         * @param name 包含属性名称和属性值的对象
+         */
+        propAt(elem: Element, name: PlainObject): V2Control,
+        /**
+         * 设置属性值
+         * @param elem 元素
+         * @param name 属性名称
+         * @param value 属性值
+         */
+        propAt(elem: Element, name: string, value: any): V2Control,
+        /**
+         * 移除属性
+         * @param elem 元素
+         * @param value 属性名称(多个时，用空格分开)
+         */
+        removeProp(elem: Element, value: string): V2Control,
         /**
          * 设置控件宽度
          * @param width 宽度
@@ -213,27 +315,57 @@
          * @param type 事件类型（不加“on”前缀，多个时用空格分开）
          * @param fn 事件回调函数
          */
-        on(type, fn): V2Control,
+        on(type: string, fn: Function): V2Control,
         /**
          * 绑定事件
          * @param type 事件类型（不加“on”前缀，多个时用空格分开）
          * @param selector 控件作用的子元素选择器
          * @param fn 事件回调函数
          */
-        on(type, selector, fn): V2Control,
+        on(type: string, selector: string, fn: Function): V2Control,
+        /**
+         * 绑定事件
+         * @param elem 元素
+         * @param type 事件类型（不加“on”前缀，多个时用空格分开）
+         * @param fn 事件回调函数
+         */
+        onAt(elem: Element, type: string, fn: Function): V2Control,
+        /**
+         * 绑定事件
+         * @param elem 元素
+         * @param type 事件类型（不加“on”前缀，多个时用空格分开）
+         * @param selector 控件作用的子元素选择器
+         * @param fn 事件回调函数
+         */
+        onAt(elem: Element, type: string, selector: string, fn: Function): V2Control,
         /**
          * 解绑事件
          * @param type 事件类型（不加“on”前缀，多个时用空格分开）
          * @param fn 事件回调函数
          */
-        off(type, fn): V2Control,
+        off(type: string, fn: Function): V2Control,
         /**
          * 解绑事件
          * @param type 事件类型（不加“on”前缀，多个时用空格分开）
          * @param selector 控件作用的子元素选择器
          * @param fn 事件回调函数
          */
-        off(type, selector): V2Control,
+        off(type: string, selector: string, fn: Function): V2Control,
+        /**
+         * 解绑事件
+         * @param elem 元素
+         * @param type 事件类型（不加“on”前缀，多个时用空格分开）
+         * @param fn 事件回调函数
+         */
+        offAt(elem: Element, type: string, fn: Function): V2Control,
+        /**
+         * 解绑事件
+         * @param elem 元素
+         * @param type 事件类型（不加“on”前缀，多个时用空格分开）
+         * @param selector 控件作用的子元素选择器
+         * @param fn 事件回调函数
+         */
+        offAt(elem: Element, type: string, selector: string, fn: Function): V2Control,
         /**
          * 向主元素追加子元素
          * @param args 元素集合

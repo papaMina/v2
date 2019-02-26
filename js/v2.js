@@ -366,9 +366,9 @@
         characterEncoding = "(?:\\\\.|[\\w-]|[^\\x00-\\xa0])+",
         identifier = characterEncoding.replace("w", "w#"),
         operators = "([*^$|!~]?=)",
-        attribute = "(" + characterEncoding + ")" + whitespace + "*(?:=" + whitespace + "*(?:(['\"])((?:\\\\.|[^\\\\])*?)\\2|(" + identifier + ")|)|)",
-        template = '^<(\\w+)' + whitespace + '*((' + whitespace + '+' + attribute.replace('\\2', '\\5') + ')+)?' + whitespace + '*\\/?>((.*)?<\\/\\1>|)$',
-        rattr = new RegExp('^' + whitespace + '+' + attribute),
+        attribute = "(" + characterEncoding + ")" + whitespace + "*(?:=" + whitespace + "*(?:(['\"])((?:\\\\.|[^\\\\])*?)\\5|(" + identifier + ")|)|)",
+        template = '^<(\\w+)' + whitespace + '*((' + whitespace + '+' + attribute + ')+)?' + whitespace + '*\\/?>((.*)?<\\/\\1>|)$',
+        rattr = new RegExp('^' + whitespace + '+' + attribute.replace(5, 2)),
         rtemplate = new RegExp(template);
     var rword = new RegExp(word, "gi"),
         rstandardTag = /^<([\w-]+)|<\/([\w-]+)>$/g,
@@ -1327,12 +1327,7 @@
             return this.variable.visible ? this.hide() : this.show();
         },
         '?visible': function (visible) {
-            this.variable.visible = !(!visible || visible === 'none');
-            this.css('display', visible ?
-                v2.isString(visible) ?
-                    visible :
-                    'block' :
-                'none');
+            this.toggleClass('hidden', !(this.variable.visible = !!visible));
         }
     });
 
@@ -2599,7 +2594,6 @@
         };
     });
     function access(vm, fn, key, value, elem, chainable, raw) {
-        elem = elem || vm.$;
 
         var i = 0, bulk = key == null;
 
@@ -2643,13 +2637,22 @@
         rcssText = /^([+-/*]=)?([+-]?(?:[0-9]+\.)?[0-9]+)/i;
     v2.use({
         hasClass: function (value) {
-            return v2.hasClass(this.$, value);
+            return this.hasClassAt(this.$, value);
+        },
+        hasClassAt: function (elem, value) {
+            return v2.hasClass(elem, value);
         },
         '"addClass': function (value) {
-            return v2.addClass(this.$, value), this;
+            return this.addClassAt(this.$, value);
+        },
+        addClassAt: function (elem, value) {
+            return v2.addClass(elem, value), this;
         },
         toggleClass: function (value, toggle) {
-            return v2.toggleClass(this.$, value, toggle), this;
+            return this.toggleClassAt(this.$, value, toggle);
+        },
+        toggleClassAt: function (elem, value, toggle) {
+            return v2.toggleClass(elem, value, toggle), this;
         },
         '.width': function (width) {
             var match = rcssText.exec(width);
@@ -2689,7 +2692,16 @@
         domManip: function (args, table, callback) {
             return v2.domManip(this.$, args, table, callback);
         },
-        '{css': function (name, value, elem) {
+        '{css': function (name, value) {
+            return this.cssAt(this.$, name, value);
+        },
+        '{attr': function (name, value) {
+            return this.attrAt(this.$, name, value);
+        },
+        '{prop': function (name, value) {
+            return this.propAt(this.$, name, value);
+        },
+        cssAt: function (elem, name, value) {
             return access(this, function (elem, name, value) {
                 var i = 0, len, map, styles;
                 if (v2.isArray(name)) {
@@ -2707,7 +2719,7 @@
                     v2.style(elem, name, value);
             }, name, value, elem, arguments.length > 1);
         },
-        '{attr': function (name, value, elem) {
+        attrAt: function (elem, name, value) {
             return access(this, function (elem, name, value) {
                 var i = 0, len, map;
                 if (v2.isArray(name)) {
@@ -2721,7 +2733,7 @@
                 return v2.attr(elem, name, value);
             }, name, value, elem, arguments.length > 1);
         },
-        '{prop': function (name, value, elem) {
+        propAt: function (elem, name, value) {
             return access(this, function (elem, name, value) {
                 var i = 0, len, map;
                 if (v2.isArray(name)) {
@@ -2739,6 +2751,9 @@
 
     v2.each("on off".split(' '), function (name) {
         v2.fn[name] = function (type, selector, fn) {
+            return this[name + 'At'](this.$, type, selector, fn);
+        };
+        v2.fn[name + 'At'] = function (elem, type, selector, fn) {
             if (arguments.length < 3) {
                 fn = selector;
                 selector = undefined;
@@ -2771,12 +2786,15 @@
                     };
                 })(this, fn));
             }
-            return v2[name](this.$, type, fn, selector), this;
+            return v2[name](elem, type, fn, selector), this;
         };
     });
     v2.each("removeClass removeAttr removeProp".split(' '), function (name) {
         v2.fn[name] = function (value) {
-            return v2[name](this.$, value), this;
+            return this[name + 'At'](this.$, value);
+        };
+        v2.fn[name + 'At'] = function (elem, value) {
+            return v2[name](elem, value), this;
         };
     });
 
@@ -2926,7 +2944,13 @@
                 return match[0];
             },
             "ATTR": function (match) {
-                return new Attr(match[0].replace(runescape, funescape), (match[2] || match[3] || "").replace(runescape, funescape));
+                if (match[3]) {
+                    match[2] = match[3];
+                }
+                if (match[2] === undefined) {
+                    match[2] = match[0];
+                }
+                return new Attr(match[0].replace(runescape, funescape), match[2].replace(runescape, funescape));
             }
         },
         deserialize: {
