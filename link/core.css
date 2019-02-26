@@ -1280,6 +1280,35 @@
     width: device-width;
 }
 
+.show {
+    display: block !important;
+}
+
+table.show {
+    display: table !important;
+}
+
+tr.show {
+    display: table-row !important;
+}
+
+th.show,
+td.show {
+    display: table-cell !important;
+}
+
+.show-block {
+    display: block !important;
+}
+
+.show-inline {
+    display: inline !important;
+}
+
+.show-inline-block {
+    display: inline-block !important;
+}
+
 .visible-xxxs,
 .visible-xxs,
 .visible-xs,
