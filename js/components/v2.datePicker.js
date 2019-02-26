@@ -217,11 +217,11 @@
         commit: function () {
             var my = this;
             if (this.showYmd) {
-                this.onAt(this.$year, 'click', function () {
+                this.onAt(this.$year, '$click', function () {
                     this.addClassAt(this.$monthPicker, 'hidden')
                         .removeClassAt(this.$yearPicker, 'hidden');
                     return false;
-                }).onAt(this.$month, 'click', function () {
+                }).onAt(this.$month, '$click', function () {
                     this.addClassAt(this.$yearPicker, 'hidden')
                         .removeClassAt(this.$monthPicker, 'hidden');
                     return false;

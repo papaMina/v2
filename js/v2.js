@@ -2754,7 +2754,7 @@
             return this[name + 'At'](this.$, type, selector, fn);
         };
         v2.fn[name + 'At'] = function (elem, type, selector, fn) {
-            if (arguments.length < 3) {
+            if (arguments.length < 4) {
                 fn = selector;
                 selector = undefined;
             }
