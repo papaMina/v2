@@ -468,6 +468,7 @@
         identity: 0,
         limit: false,
         access: false,
+        visible: true,
         $: null,
         $$: null,
         $master: null,
@@ -865,9 +866,19 @@
             this.switchCase();
         },
         usb: function () {
+            var my = this, visible = !!this.visible;
             this.define('disabled', function (value) {
                 this.toggleClass('disabled', !!value);
-            });
+            }).define('visible', {
+                get: function () {
+                    return visible;
+                },
+                set: function (value) {
+                    if (visible === !value) {
+                        my.toggleClass('hidden', !(visible = !!value));
+                    }
+                }
+            }, true);
         },
         render: function (variable) {
             v2.each(this.namespace.split("."), function (tag) {
@@ -1315,19 +1326,17 @@
             } catch (e) { }
         },
         '&show': function () {
-            this.visible(true);
+            this.visible = true;
         },
         '&hide': function () {
+            this.visible = false;
             this.visible(false);
         },
         '?toggle': function (toggle) {
             if (typeof toggle === "boolean") {
                 return toggle ? this.show() : this.hide();
             }
-            return this.variable.visible ? this.hide() : this.show();
-        },
-        '?visible': function (visible) {
-            this.toggleClass('hidden', !(this.variable.visible = !!visible));
+            return this.visible ? this.hide() : this.show();
         }
     });
 

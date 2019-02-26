@@ -15,6 +15,8 @@
         render(variable: PlainObject): any,
         /** 取数（无论同步还是异步，控件都将在取数完成后自动继续渲染控件） */
         ajax(): any,
+        /** 将控件属性和核心元素属性进行绑定 */
+        usb(): any,
         /** 解决(生成控件内容，处理控件复杂逻辑) */
         resolve(): any,
         /** 完成提交（绑定事件） */
@@ -30,11 +32,6 @@
          * @param toggle 为true时显示控件，否则隐藏控件
          */
         toggle(toggle: boolean): any,
-        /**
-         * 隐藏或显示控件
-         * @param visible 为true时显示控件，否则隐藏控件
-         */
-        visible(visible: boolean): any,
         /**
          * 启用或禁用当前控件
          * @param disabled 为true时禁用，否则启用
@@ -480,6 +477,11 @@
         readonly namespace: string,
         /** 是否准备完成（默认：false） */
         readonly isReady: boolean,
+        /**
+         * 隐藏或显示控件(默认：true)
+         * @param visible 为true时显示控件，否则隐藏控件
+         */
+        visible: boolean,
         /** 入参变量(入参) */
         readonly variable: PlainObject,
         /** 母控件 */

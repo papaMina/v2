@@ -211,6 +211,11 @@
                 }
             });
         },
+        show: function () {
+            if (this.variable.visible)
+                this.resolve();
+            this.base.show();
+        },
         resolve: function () {
             this.dayRender();
         },
